@@ -4,3 +4,6 @@ __pycache__/
 instance/
 .venv/
 venv/
+*.bkp
+*.dtmp
+*.drawio
