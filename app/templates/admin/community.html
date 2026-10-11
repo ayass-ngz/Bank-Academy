@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import confirm_delete, empty with context %}
+{% block title %}Modération{% endblock %}
+{% block content %}
+<div class="small text-muted">Entrepreneuriat</div>
+<h1 class="h3 mb-3">Modération de la communauté</h1>
+{% for p in posts %}
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between gap-2">
+      <div>
+        <h2 class="h6 mb-1">{{ p.title }}</h2>
+        <small class="text-muted">{{ p.author.full_name }} ({{ p.author.age }} ans) · {{ p.created_at|datetime_fr }}</small>
+      </div>
+      {{ confirm_delete(url_for('admin.post_delete', post_id=p.id)) }}
+    </div>
+    <p class="small mt-2 mb-2">{{ p.body|nl2br }}</p>
+    {% for c in p.comments %}
+    <div class="d-flex justify-content-between gap-2 border-start ps-3 py-1 small">
+      <span><strong>{{ c.author.full_name }}</strong> : {{ c.body }}</span>
+      {{ confirm_delete(url_for('admin.comment_delete', comment_id=c.id), "") }}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% else %}{{ empty("Aucune publication.") }}{% endfor %}
+{% endblock %}

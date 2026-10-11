@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, empty, band_badge with context %}
+{% block title %}Quiz{% endblock %}
+{% block content %}
+{{ pkg_header("Un nouveau quiz régulièrement : 10 points par bonne réponse, bonus si sans faute !", back=url_for('client.advanced_home')) }}
+<div class="list-group">
+{% for q in quizzes %}
+  {% set a = attempts.get(q.id) %}
+  <a href="{{ url_for('client.quiz_take', quiz_id=q.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2">
+    <span>
+      <span class="fw-semibold">{{ q.title }}</span> {% if loop.first %}<span class="badge bg-warning text-dark">Quiz du jour</span>{% endif %} {{ band_badge(q.band) }}<br>
+      <small class="text-muted">{{ q.publish_date|date_fr }} · {{ q.questions|length }} question(s)</small>
+    </span>
+    {% if a %}<span class="badge text-bg-success">{{ a.score }}/{{ a.total }}</span>{% else %}<span class="btn btn-sm btn-brand">Jouer</span>{% endif %}
+  </a>
+{% else %}{{ empty("Aucun quiz publié.", "bi-lightning-charge") }}{% endfor %}
+</div>
+{% endblock %}

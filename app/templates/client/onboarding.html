@@ -1,0 +1,36 @@
+{% extends "client/_welcome_shell.html" %}
+{% from "partials/macros.html" import mascot with context %}
+{% if not retake %}{% set steps = 2 %}{% endif %}
+{% block title %}Test de positionnement{% endblock %}
+{% block welcome %}
+<div class="welcome-card welcome-wide">
+  <div class="welcome-plant">{{ mascot("", 1) }}</div>
+  <h1 class="h3">{{ "Repasse le test de positionnement" if retake else "Trouvons ton niveau, " ~ current_user.first_name }}</h1>
+  <p class="text-muted mb-4">
+    {% if retake %}Tu as progressé ? Repasse le test : si ton niveau est plus élevé, de nouvelles unités se débloqueront
+      (tu ne perdras jamais le niveau que tu as déjà).
+    {% else %}Ce n'est pas une note : le test sert à t'ouvrir les leçons qui correspondent vraiment à ce que tu sais déjà.{% endif %}
+  </p>
+  <div class="welcome-facts">
+    <div><i class="bi bi-list-ol"></i><strong>20 questions</strong><span>tirées de ton programme</span></div>
+    <div><i class="bi bi-arrow-down-up"></i><strong>Adaptatif</strong><span>la difficulté suit tes réponses</span></div>
+    <div><i class="bi bi-lock"></i><strong>4 niveaux</strong><span>les niveaux au-dessus du tien restent verrouillés</span></div>
+  </div>
+  <div class="welcome-levels">
+    {% for lvl in levels %}
+      <span class="welcome-level {{ 'is-current' if retake and loop.index0 == current_user.level }}"><i class="bi {{ lvl.icon }}"></i> {{ lvl.name }}</span>
+    {% endfor %}
+  </div>
+  <p class="small text-muted">Une bonne réponse ? La question suivante est plus difficile. Une erreur ? Elle est plus facile.
+    Ainsi, en 20 questions, le test trouve précisément ton niveau.</p>
+  <a href="{{ url_for('client.onboarding_test') }}" class="btn btn-brand btn-lg w-100 mb-2">Commencer le test</a>
+  {% if retake %}
+    <a href="{{ url_for('client.profile') }}" class="btn btn-link">Retour à mon profil</a>
+  {% else %}
+    <form method="post" action="{{ url_for('client.onboarding_skip') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-link text-muted">Je préfère commencer au niveau Découverte</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import confirm_delete, empty with context %}
+{% block title %}{{ entity.title }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    {% if entity.back %}<a href="{{ url_for(entity.back[1]) }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {{ entity.back[0] }}</a>
+    {% else %}<div class="small text-muted">{{ CATALOG[entity.package].name }}</div>{% endif %}
+    <h1 class="h3 mb-0">{{ entity.title }}</h1>
+  </div>
+  <a href="{{ url_for('admin.crud_form', slug=entity.slug) }}" class="btn btn-brand"><i class="bi bi-plus-lg"></i> Ajouter {{ entity.singular }}</a>
+</div>
+{% if items %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr>{% for _, label in entity.columns %}<th>{{ label }}</th>{% endfor %}<th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for item in items %}
+        <tr>
+          {% for name, _ in entity.columns %}<td>{{ entity.cell(item, name)|string|truncate(80) }}</td>{% endfor %}
+          <td class="text-end text-nowrap">
+            {% if entity.row_link %}<a href="{{ url_for(entity.row_link[1], **{entity.row_link[2]: item.id}) }}" class="btn btn-sm btn-brand">{{ entity.row_link[0] }}</a>{% endif %}
+            <a href="{{ url_for('admin.crud_form', slug=entity.slug, obj_id=item.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+            {{ confirm_delete(url_for('admin.crud_delete', slug=entity.slug, obj_id=item.id), "") }}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+  {{ empty("Aucun élément pour l'instant.") }}
+{% endif %}
+{% endblock %}

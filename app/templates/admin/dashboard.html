@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Administration{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+  <div>
+    <h1 class="h3 mb-1">Tableau de bord</h1>
+    <p class="text-muted mb-0">{{ bank.name }} — interface d'administration</p>
+  </div>
+  <a href="{{ url_for('admin.packages') }}" class="btn btn-brand"><i class="bi bi-boxes"></i> Gérer les packages</a>
+</div>
+<div class="row g-3 mb-4">
+  {% for value, label, icon in [
+      (stats.minors, "Clients 10 – 17 ans", "bi-emoji-smile"),
+      (stats.adults, "Clients 18 – 24 ans", "bi-person"),
+      (stats.parents, "Parents", "bi-people"),
+      (stats.active_today, "Actifs aujourd'hui", "bi-activity"),
+      (stats.quiz_week, "Quiz joués (7 j)", "bi-lightning-charge"),
+      (stats.games_week, "Parties jouées (7 j)", "bi-controller"),
+      (stats.open_questions, "Questions sans réponse officielle", "bi-chat-square-dots"),
+      (stats.interests, "Prospects offres", "bi-briefcase")] %}
+  <div class="col-6 col-md-3"><div class="stat-card"><i class="bi {{ icon }} text-brand"></i><div class="stat-value">{{ value }}</div><div class="stat-label">{{ label }}</div></div></div>
+  {% endfor %}
+</div>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Packages</div>
+      <ul class="list-group list-group-flush">
+        {% for p in bank.packages %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span><i class="bi {{ p.icon }} text-brand"></i> {{ p.name }}</span>
+          <span>
+            {% for e in entities.values() if e.package == p.code %}<a href="{{ url_for('admin.crud_list', slug=e.slug) }}" class="btn btn-sm btn-outline-secondary">{{ e.title }}</a>{% endfor %}
+            {% if p.code == 'education_advanced' %}<a href="{{ url_for('admin.quizzes') }}" class="btn btn-sm btn-outline-secondary">Quiz</a> <a href="{{ url_for('admin.qa_list') }}" class="btn btn-sm btn-outline-secondary">Q&amp;R</a>{% endif %}
+            {% if p.code == 'entrepreneurship' %}<a href="{{ url_for('admin.community') }}" class="btn btn-sm btn-outline-secondary">Modération</a>{% endif %}
+            <span class="badge {{ 'text-bg-success' if p.enabled else 'text-bg-secondary' }}">{{ "Actif" if p.enabled else "Inactif" }}</span>
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Top 5 des clients (points)</div>
+      <ol class="list-group list-group-flush list-group-numbered">
+        {% for u in top %}
+        <li class="list-group-item d-flex justify-content-between"><a class="ms-2 me-auto" href="{{ url_for('admin.user_detail', user_id=u.id) }}">{{ u.full_name }}</a><span>{{ u.points }} pts</span></li>
+        {% else %}<li class="list-group-item text-muted">Aucun client.</li>{% endfor %}
+      </ol>
+    </div>
+  </div>
+</div>
+{% endblock %}

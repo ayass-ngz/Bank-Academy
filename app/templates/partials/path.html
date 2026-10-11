@@ -1,0 +1,104 @@
+{% from "partials/macros.html" import mascot with context %}
+
+{# Feuille de route verticale : une unité = un en-tête (avec sa plante) + une suite d'étapes. #}
+{% macro render_units(units, interactive=True) %}
+{% for unit in units %}
+{% set stage = 0 if unit.done_count == 0 else (1 if unit.percent < 50 else (2 if unit.percent < 100 else 3)) %}
+<section class="unit {{ 'is-complete' if unit.done_count == unit.total }} {{ 'is-blocked' if unit.blocked }}" style="--unit: {{ unit.color }}" id="unite-{{ unit.number }}">
+  <header class="unit-head">
+    <div class="unit-head-text">
+      <div class="unit-kicker">Unité {{ unit.number }}{% if unit.done_count == unit.total %} · <i class="bi bi-check-circle-fill"></i> terminée{% elif unit.blocked %} · <i class="bi bi-lock-fill"></i> niveau {{ ["Découverte", "Initié", "Confirmé", "Expert"][unit.level] }} requis{% elif unit.opened_by_test %} · <i class="bi bi-check2-all"></i> niveau acquis{% endif %}</div>
+      <h2 class="unit-title">{{ unit.title or unit.package.name }}</h2>
+      {% if unit.description %}<p class="unit-desc">{{ unit.description }}</p>{% endif %}
+      <div class="unit-progress">
+        <div class="unit-progress-bar"><span style="width: {{ unit.percent }}%"></span></div>
+        <span class="unit-progress-label">{{ unit.done_count }} / {{ unit.total }} étapes</span>
+      </div>
+    </div>
+    <div class="unit-plant" title="Ta plante grandit à chaque étape terminée">{{ mascot("", stage) }}</div>
+  </header>
+
+  <ol class="track">
+  {% for n in unit.nodes %}
+    {% set milestone = n.kind == "chest" %}
+    {% if milestone %}{% set icon = n.icon %}
+    {% elif n.state == "done" %}{% set icon = "bi-check-lg" %}
+    {% elif n.state == "locked" %}{% set icon = "bi-lock-fill" %}
+    {% else %}{% set icon = n.icon %}{% endif %}
+    <li class="track-step state-{{ n.state }}{{ ' is-milestone' if milestone }}">
+      <span class="track-marker" aria-hidden="true"><i class="bi {{ icon }}"></i></span>
+      <div class="track-card">
+        <div class="track-body">
+          {% if n.subtitle %}<div class="track-meta">{{ n.subtitle }}</div>{% endif %}
+          <div class="track-title">{{ n.title }}</div>
+        </div>
+        {% if interactive %}
+          {% if n.state == "locked" and unit.blocked %}
+            <span class="track-status"><i class="bi bi-lock-fill"></i> Niveau {{ ["Découverte", "Initié", "Confirmé", "Expert"][unit.level] }}</span>
+          {% elif n.state == "locked" %}
+            <span class="track-status"><i class="bi bi-lock"></i> À débloquer</span>
+          {% elif milestone %}
+            {% if n.state == "current" %}
+              <form method="post" action="{{ n.url }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-brand btn-sm">Valider le palier</button>
+              </form>
+            {% else %}
+              <span class="track-status is-done"><i class="bi bi-check-circle-fill"></i> Validé</span>
+            {% endif %}
+          {% elif n.state == "current" %}
+            <a class="btn btn-brand btn-sm" href="{{ n.url }}">Commencer</a>
+          {% elif n.state == "open" %}
+            <a class="track-link" href="{{ n.url }}">Commencer</a>
+          {% else %}
+            <a class="track-link" href="{{ n.url }}">Revoir</a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </li>
+  {% endfor %}
+  </ol>
+</section>
+{% endfor %}
+{% endmacro %}
+
+{# Barres de progression par section (package) #}
+{% macro path_summary(units) %}
+{% for unit in units %}
+<div class="summary-row" style="--unit: {{ unit.color }}">
+  <span class="summary-icon"><i class="bi {{ CATALOG[unit.package.code].icon }}"></i></span>
+  <div class="flex-grow-1 min-w-0">
+    <div class="d-flex justify-content-between gap-2"><strong class="text-truncate">{{ unit.package.name }}</strong><span class="text-muted small text-nowrap">{{ unit.done_count }} / {{ unit.total }}</span></div>
+    <div class="xp-bar unit-color"><span style="width: {{ unit.percent }}%"></span></div>
+  </div>
+</div>
+{% else %}
+<p class="text-muted mb-0">Aucun parcours disponible.</p>
+{% endfor %}
+{% endmacro %}
+
+{# Détail unité par unité, groupé par section (lecture seule) #}
+{% macro unit_summary(sections) %}
+{% for section in sections %}
+<div class="card mb-3" style="--unit: {{ section.color }}">
+  <div class="card-header d-flex align-items-center gap-2">
+    <span class="summary-icon summary-icon-sm"><i class="bi {{ section.icon }}"></i></span>
+    <span class="flex-grow-1">{{ section.package.name }}</span>
+    <span class="text-muted small">{{ section.percent }} %</span>
+  </div>
+  <ul class="list-group list-group-flush">
+    {% for unit in section.units %}
+    <li class="list-group-item">
+      <div class="d-flex justify-content-between gap-2 small">
+        <span class="fw-bold text-truncate">{% if unit.done_count == unit.total %}<i class="bi bi-check-circle-fill" style="color: var(--unit)"></i> {% endif %}{{ unit.title }}</span>
+        <span class="text-muted text-nowrap">{{ unit.done_count }} / {{ unit.total }}</span>
+      </div>
+      <div class="xp-bar unit-color mt-1" style="height:8px"><span style="width: {{ unit.percent }}%"></span></div>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% else %}
+<p class="text-muted">Aucun parcours disponible.</p>
+{% endfor %}
+{% endmacro %}

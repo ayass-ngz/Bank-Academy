@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import empty with context %}
+{% block title %}Questions / Réponses{% endblock %}
+{% block content %}
+<div class="small text-muted">Éducation avancée</div>
+<h1 class="h3 mb-3">Questions / Réponses</h1>
+<div class="list-group">
+{% for q in questions %}
+  <a href="{{ url_for('admin.qa_detail', question_id=q.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2">
+    <span><span class="fw-semibold">{{ q.title }}</span><br><small class="text-muted">{{ q.author.full_name }} · {{ q.created_at|datetime_fr }} · {{ q.answers|length }} réponse(s)</small></span>
+    {% if q.has_official_answer %}<span class="badge text-bg-success">Répondu</span>{% else %}<span class="badge text-bg-warning">À traiter</span>{% endif %}
+  </a>
+{% else %}{{ empty("Aucune question.") }}{% endfor %}
+</div>
+{% endblock %}

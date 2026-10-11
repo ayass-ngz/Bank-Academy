@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, csrf, empty with context %}
+{% block title %}Communauté{% endblock %}
+{% block content %}
+{{ pkg_header("Partage tes idées, trouve des associés et des conseils.", back=url_for('client.entrepreneurship_home')) }}
+<div class="row g-4">
+  <div class="col-lg-4 order-lg-2">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="h6">Nouvelle publication</h2>
+        <form method="post">
+          {{ csrf() }}
+          <select name="category" class="form-select mb-2" required>
+            {% for code, label in categories %}<option value="{{ code }}">{{ label }}</option>{% endfor %}
+          </select>
+          <input name="title" class="form-control mb-2" maxlength="200" placeholder="Titre" required>
+          <textarea name="body" class="form-control mb-2" rows="5" placeholder="Décris ton projet ou ta demande…" required></textarea>
+          <button class="btn btn-brand w-100">Publier</button>
+        </form>
+        <p class="small text-muted mt-2 mb-0"><i class="bi bi-shield-check"></i> Reste bienveillant(e). Les publications sont modérées par la banque.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8 order-lg-1">
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <a href="{{ url_for('client.community') }}" class="btn btn-sm {{ 'btn-brand' if not selected else 'btn-outline-secondary' }}">Tout</a>
+      {% for code, label in categories %}
+        <a href="{{ url_for('client.community', categorie=code) }}" class="btn btn-sm {{ 'btn-brand' if selected == code else 'btn-outline-secondary' }}">{{ label }}</a>
+      {% endfor %}
+    </div>
+    {% for p in posts %}
+    <a href="{{ url_for('client.post_detail', post_id=p.id) }}" class="card mb-3 text-decoration-none text-reset post-card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between flex-wrap gap-2 mb-1">
+          <span class="badge bg-brand-soft text-brand">{{ category_labels.get(p.category) }}</span>
+          <small class="text-muted">{{ p.created_at|date_fr }}</small>
+        </div>
+        <h3 class="h6 mb-1">{{ p.title }}</h3>
+        <p class="small text-muted mb-2">{{ p.body|truncate(180) }}</p>
+        <small><i class="bi bi-person-circle"></i> {{ p.author.public_name }} · <i class="bi bi-chat"></i> {{ p.comments|length }}</small>
+      </div>
+    </a>
+    {% else %}{{ empty("Aucune publication dans cette catégorie.", "bi-people") }}{% endfor %}
+  </div>
+</div>
+{% endblock %}

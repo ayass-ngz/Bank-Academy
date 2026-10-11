@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, csrf, empty with context %}
+{% block title %}{{ quiz.title }}{% endblock %}
+{% block content %}
+{{ pkg_header(back=url_for('client.quizzes')) }}
+<div class="card">
+  <div class="card-body p-md-4">
+    <h2 class="h4">{{ quiz.title }}</h2>
+    {% if quiz.description %}<p class="text-muted">{{ quiz.description }}</p>{% endif %}
+
+    {% if not quiz.questions %}
+      {{ empty("Ce quiz n'a pas encore de questions.") }}
+    {% elif attempt %}
+      <div class="alert alert-success d-flex align-items-center gap-2">
+        <i class="bi bi-trophy fs-4"></i>
+        <div>Ton score : <strong>{{ attempt.score }}/{{ attempt.total }}</strong>. Voici la correction :</div>
+      </div>
+      {% for q in quiz.questions %}
+      <div class="mb-4">
+        <p class="fw-semibold mb-2">{{ loop.index }}. {{ q.text }}</p>
+        <ul class="list-unstyled mb-2">
+          {% for c in q.choices %}
+            {% set mine = answers.get(q.id) == c.id %}
+            <li class="quiz-choice {{ 'correct' if c.is_correct }} {{ 'wrong' if mine and not c.is_correct }}">
+              <i class="bi {{ 'bi-check-circle-fill' if c.is_correct else ('bi-x-circle-fill' if mine else 'bi-circle') }}"></i> {{ c.text }}
+            </li>
+          {% endfor %}
+        </ul>
+        {% if q.explanation %}<div class="small text-muted"><i class="bi bi-lightbulb"></i> {{ q.explanation }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <a href="{{ url_for('client.quizzes') }}" class="btn btn-brand">Autres quiz</a>
+    {% else %}
+      <form method="post">
+        {{ csrf() }}
+        {% for q in quiz.questions %}
+        <fieldset class="mb-4">
+          <legend class="fs-6 fw-semibold">{{ loop.index }}. {{ q.text }}</legend>
+          {% for c in q.choices %}
+          <input type="radio" class="btn-check" name="q{{ q.id }}" id="c{{ c.id }}" value="{{ c.id }}" required>
+          <label class="btn btn-outline-brand quiz-option w-100 text-start mb-2" for="c{{ c.id }}">{{ c.text }}</label>
+          {% endfor %}
+        </fieldset>
+        {% endfor %}
+        <button class="btn btn-brand btn-lg">Valider mes réponses</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

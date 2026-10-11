@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import mascot with context %}
+{% block content %}
+<section class="landing-hero">
+  <div class="landing-mascot">{{ mascot() }}</div>
+  <div class="landing-text">
+    <span class="landing-kicker">Éducation financière · 10 – 24 ans</span>
+    <h1>Fais grandir tes connaissances financières, étape par étape.</h1>
+    <p class="landing-lead">Des parcours adaptés à ton âge, des leçons courtes, des jeux et des défis proposés par ta banque.</p>
+    <div class="d-grid gap-3 landing-actions">
+      <a href="{{ url_for('auth.register', role='parent') }}" class="btn btn-brand btn-lg">Je crée le compte de mon enfant (10 – 17 ans)</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-outline-secondary btn-lg">J'ai 18 – 24 ans, je m'inscris</a>
+      <a href="{{ url_for('auth.login') }}" class="landing-parent text-center">J'ai déjà un compte → me connecter</a>
+
+    </div>
+  </div>
+</section>
+
+<section class="landing-packages">
+  <h2>Un parcours adapté à ton âge, de 10 à 24 ans</h2>
+  <div class="row g-3">
+    {% for p in catalog %}
+    <div class="col-sm-6 col-lg-4">
+      <div class="feature-card" style="--unit: {{ p.color }}">
+        <span class="feature-icon"><i class="bi {{ p.icon }}"></i></span>
+        <div>
+          <h3>{{ p.name }}</h3>
+          <p>{{ p.description }}</p>
+          {% if p.recommended_band != 'all' %}<span class="badge rounded-pill text-bg-light border">Recommandé {{ BANDS[p.recommended_band] }}</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

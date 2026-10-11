@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import announcement, confirm_delete, empty with context %}
+{% from "partials/path.html" import unit_summary, path_summary with context %}
+{% block title %}{{ child.first_name }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('parent.dashboard') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Retour</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-1 mb-4">
+  <h1 class="h3 mb-0">{{ child.full_name }} <small class="text-muted fs-6">{{ child.age }} ans</small></h1>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-fire text-warning"></i><div class="stat-value">{{ child.effective_streak }}</div><div class="stat-label">série actuelle</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-award text-warning"></i><div class="stat-value">{{ child.best_streak }}</div><div class="stat-label">meilleure série</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-star-fill text-warning"></i><div class="stat-value">{{ child.points }}</div><div class="stat-label">points</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-lightning-charge text-brand"></i><div class="stat-value">{{ attempts|length }}</div><div class="stat-label">quiz récents</div></div></div>
+</div>
+<div class="row g-4 mb-4">
+  <div class="col-lg-5">
+    <h2 class="section-title">Avancement des parcours</h2>
+    <div class="card"><div class="card-body">{{ path_summary(sections) }}</div></div>
+  </div>
+  <div class="col-lg-7">
+    <h2 class="section-title">Parcours de {{ child.first_name }}</h2>
+    {{ unit_summary(sections) }}
+  </div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card mb-4">
+      <div class="card-header bg-white fw-semibold">Quiz</div>
+      <ul class="list-group list-group-flush">
+        {% for a in attempts %}<li class="list-group-item d-flex justify-content-between"><span>{{ a.quiz.title }}</span><span class="small text-muted">{{ a.score }}/{{ a.total }} · {{ a.created_at|date_fr }}</span></li>
+        {% else %}<li class="list-group-item">{{ empty("Aucun quiz réalisé.") }}</li>{% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Jeux</div>
+      <ul class="list-group list-group-flush">
+        {% for s in scores %}<li class="list-group-item d-flex justify-content-between"><span>{{ games[s.game_code].name if s.game_code in games else s.game_code }}</span><span class="small text-muted">{{ s.score }} pts · {{ s.created_at|datetime_fr }}</span></li>
+        {% else %}<li class="list-group-item">{{ empty("Aucune partie jouée.") }}</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <h2 class="h5 mb-3">Annonces au sujet de {{ child.first_name }}</h2>
+    {% for a in announcements %}{{ announcement(a) }}{% else %}{{ empty("Aucune annonce spécifique.", "bi-bell") }}{% endfor %}
+  </div>
+</div>
+{% endblock %}

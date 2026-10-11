@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header with context %}
+{% block title %}{{ resource.title }}{% endblock %}
+{% block content %}
+{{ pkg_header(back=url_for('client.entrepreneurship_home')) }}
+<article class="card">
+  <div class="card-body p-md-4">
+    <span class="badge bg-brand-soft text-brand mb-2">{{ category_label }}</span>
+    <h2 class="h4">{{ resource.title }}</h2>
+    {% if resource.summary %}<p class="lead">{{ resource.summary }}</p>{% endif %}
+    <div class="article-content">{{ resource.content|nl2br }}</div>
+    {% if resource.external_url %}<a href="{{ resource.external_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-brand mt-3"><i class="bi bi-box-arrow-up-right"></i> Aller plus loin</a>{% endif %}
+  </div>
+</article>
+{% endblock %}

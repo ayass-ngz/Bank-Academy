@@ -1,0 +1,52 @@
+{% set r = rail() %}
+<div class="rail-card rail-stats">
+  <div class="rail-stat" title="Jours de connexion consécutifs : reviens chaque jour pour garder ta série">
+    <span class="rail-stat-icon stat-streak"><i class="bi bi-fire"></i></span>
+    <div><strong>{{ current_user.effective_streak }} jour{{ 's' if current_user.effective_streak > 1 }}</strong><span>de connexion d'affilée</span></div>
+  </div>
+  <div class="rail-stat" title="Ta position au classement {{ BANDS[current_user.band] }} et ton score">
+    <span class="rail-stat-icon stat-rank"><i class="bi bi-trophy-fill"></i></span>
+    <div><strong>{{ r.rank }}<sup>{{ 'er' if r.rank == 1 else 'e' }}</sup> · {{ current_user.points }} pts</strong><span>Classement {{ BANDS[current_user.band] }}</span></div>
+  </div>
+</div>
+
+{% if r.quiz_of_day %}
+<div class="rail-card">
+  <div class="rail-card-title">Quiz du jour</div>
+  <div class="fw-semibold mb-2">{{ r.quiz_of_day.title }}</div>
+  {% if r.quiz_done %}
+    <span class="track-status is-done"><i class="bi bi-check-circle-fill"></i> Terminé</span>
+  {% else %}
+    <a href="{{ url_for('client.quiz_take', quiz_id=r.quiz_of_day.id) }}" class="btn btn-brand btn-sm">Répondre au quiz</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% set done = r.quests|selectattr('done')|list|length %}
+<div class="rail-card">
+  <div class="rail-card-title d-flex justify-content-between align-items-baseline">
+    <span>Objectifs du jour</span><small class="text-muted">{{ done }} / {{ r.quests|length }}</small>
+  </div>
+  {% for q in r.quests %}
+  <div class="objective {{ 'done' if q.done }}">
+    <i class="bi {{ 'bi-check-circle-fill' if q.done else 'bi-circle' }} objective-check"></i>
+    <div class="flex-grow-1 min-w-0">
+      <div class="objective-title">{{ q.title }}</div>
+      <div class="objective-bar"><span style="width: {{ (100 * q.value / q.goal)|round|int }}%"></span></div>
+    </div>
+    <span class="objective-count">{{ q.value }}/{{ q.goal }}</span>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="rail-card">
+  <div class="rail-card-title">Classement {{ BANDS[current_user.band] }}</div>
+  {% for u in r.leaders %}
+  <div class="leader-row {{ 'me' if u.id == current_user.id }}">
+    <span class="leader-pos">{{ loop.index }}</span>
+    <span class="avatar">{{ u.first_name[:1] }}</span>
+    <span class="flex-grow-1 text-truncate">{{ u.public_name }}</span>
+    <span class="leader-points">{{ u.points }} pts</span>
+  </div>
+  {% endfor %}
+</div>

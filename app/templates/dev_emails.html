@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}E-mails de démonstration{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">E-mails envoyés (mode démonstration)</h1>
+<p class="text-muted">Aucun serveur d'e-mail n'est configuré : les messages sont enregistrés dans <code>instance/outbox</code>.
+  Configurez <code>MAIL_SERVER</code> dans <code>.env</code> pour les envoyer réellement.</p>
+{% for m in messages %}
+<div class="card mb-3">
+  <div class="card-header d-flex flex-wrap justify-content-between gap-2">
+    <span><i class="bi bi-envelope"></i> {{ m.subject }}</span>
+    <span class="text-muted small">À : {{ m.to }}</span>
+  </div>
+  <div class="card-body"><pre class="mb-0 dev-mail">{{ m.body }}</pre></div>
+</div>
+{% else %}
+<p class="text-muted">Aucun e-mail pour le moment.</p>
+{% endfor %}
+{% endblock %}

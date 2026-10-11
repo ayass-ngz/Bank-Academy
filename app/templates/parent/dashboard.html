@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import announcement, csrf, empty with context %}
+{% from "partials/path.html" import path_summary with context %}
+{% block title %}Espace parent{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+  <div>
+    <h1 class="h3 mb-1">Bonjour {{ current_user.first_name }}</h1>
+    <p class="text-muted mb-0">Créez le compte de vos enfants, suivez leur progression et les actualités de {{ bank.name }}.</p>
+  </div>
+  <a href="{{ url_for('parent.child_new') }}" class="btn btn-brand"><i class="bi bi-person-plus-fill"></i> Créer le compte de mon enfant</a>
+</div>
+
+<div class="row g-4">
+  <div class="{{ 'col-lg-7' if parental_enabled else 'col-12' }}">
+    <h2 class="h5 mb-3"><i class="bi bi-people"></i> Mes enfants</h2>
+    {% for child in current_user.children %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between flex-wrap gap-2 align-items-center">
+          <div class="d-flex gap-2 align-items-center">
+            <div class="avatar avatar-lg">{{ child.first_name[:1] }}</div>
+            <div>
+              <h3 class="h6 mb-0">{{ child.full_name }}</h3>
+              <small class="text-muted">{{ child.age }} ans ·
+                {% if child.must_change_password %}<span class="text-warning-emphasis"><i class="bi bi-hourglass-split"></i> pas encore connecté(e)</span>
+                {% elif not child.onboarded_at %}<span class="text-warning-emphasis"><i class="bi bi-clipboard-check"></i> test de niveau à passer</span>
+                {% else %}<i class="bi {{ levels[child.level].icon }}"></i> Niveau {{ levels[child.level].name }}{% endif %}
+              </small>
+            </div>
+          </div>
+          {% if parental_enabled %}<a href="{{ url_for('parent.child_detail', child_id=child.id) }}" class="btn btn-sm btn-brand">Voir le détail</a>{% endif %}
+        </div>
+        {% if child.must_change_password %}
+          <div class="parent-pending mt-3">
+            <i class="bi bi-envelope-paper"></i>
+            <div class="flex-grow-1 small">Identifiants envoyés à <strong>{{ child.email }}</strong>. {{ child.first_name }} choisira son mot de passe à sa première connexion.</div>
+            <form method="post" action="{{ url_for('parent.resend_credentials', child_id=child.id) }}">{{ csrf() }}
+              <button class="btn btn-sm btn-outline-secondary">Renvoyer les identifiants</button></form>
+          </div>
+        {% elif parental_enabled %}
+          <div class="row text-center g-2 mt-2">
+            <div class="col-4"><div class="mini-stat"><i class="bi bi-fire stat-streak"></i> {{ child.effective_streak }}<div class="small text-muted">jours d'affilée</div></div></div>
+            <div class="col-4"><div class="mini-stat"><i class="bi bi-trophy-fill stat-rank"></i> {{ child.points }}<div class="small text-muted">points</div></div></div>
+            <div class="col-4"><div class="mini-stat"><i class="bi bi-clock-history"></i> {{ child.last_active_date|date_fr if child.last_active_date else "—" }}<div class="small text-muted">dernière visite</div></div></div>
+          </div>
+          <div class="mt-3">{{ path_summary(paths[child.id]) }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+      <div class="card mb-3"><div class="card-body text-center py-4">
+        <i class="bi bi-person-plus fs-2 text-muted d-block mb-2"></i>
+        <p class="mb-3">Aucun enfant rattaché pour le moment.</p>
+        <a href="{{ url_for('parent.child_new') }}" class="btn btn-brand">Créer le compte de mon enfant</a>
+      </div></div>
+    {% endfor %}
+  </div>
+  {% if parental_enabled %}
+  <div class="col-lg-5">
+    <h2 class="h5 mb-3"><i class="bi bi-bell"></i> Annonces</h2>
+    {% for a in announcements %}{{ announcement(a, show_child=True) }}{% else %}{{ empty("Aucune annonce.", "bi-bell") }}{% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+{% if events %}
+<h2 class="h5 mt-4 mb-3"><i class="bi bi-info-circle"></i> Information de la banque</h2>
+<div class="row g-3">{% for a in events %}<div class="col-md-6">{{ announcement(a) }}</div>{% endfor %}</div>
+{% endif %}
+{% endblock %}

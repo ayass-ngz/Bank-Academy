@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% set with_rail = true %}
+{% from "partials/macros.html" import empty, mascot with context %}
+{% from "partials/path.html" import path_summary with context %}
+{% block title %}Mon profil{% endblock %}
+{% block content %}
+<div class="profile-head">
+  <div class="profile-avatar">{{ mascot() }}</div>
+  <div class="min-w-0">
+    <h1 class="h2 mb-0">{{ current_user.full_name }}</h1>
+    <div class="text-muted">{{ current_user.email }}</div>
+    <div class="text-muted small">Inscrit(e) le {{ current_user.created_at|date_fr }} · {{ current_user.age }} ans</div>
+    <div class="mt-2 d-flex flex-wrap align-items-center gap-2">
+      <span class="home-chip"><i class="bi {{ levels[current_user.level].icon }}"></i> Niveau {{ levels[current_user.level].name }}</span>
+      <a href="{{ url_for('client.onboarding') }}" class="small fw-semibold">Repasser le test de niveau</a>
+    </div>
+  </div>
+</div>
+
+<h2 class="section-title">Statistiques</h2>
+<div class="row g-3 mb-4">
+  {% for icon, color, value, label in [
+      ("bi-fire", "#f76707", current_user.effective_streak, "Jours de connexion d'affilée"),
+      ("bi-trophy-fill", "#e0a100", current_user.points ~ " pts", "Score"),
+      ("bi-calendar-check", "#2f6fed", current_user.best_streak, "Record de jours d'affilée"),
+      ("bi-signpost-2-fill", "#7c5cf2", steps_done, "Étapes terminées")] %}
+  <div class="col-6">
+    <div class="stat-tile">
+      <i class="bi {{ icon }}" style="color: {{ color }}"></i>
+      <div><div class="stat-value">{{ value }}</div><div class="stat-label">{{ label }}</div></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<h2 class="section-title">Mes parcours</h2>
+<div class="card mb-4"><div class="card-body">{{ path_summary(sections) }}</div></div>
+
+<h2 class="section-title">Historique</h2>
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">Quiz</div>
+      <ul class="list-group list-group-flush">
+        {% for a in attempts %}
+        <li class="list-group-item d-flex justify-content-between gap-2"><span class="text-truncate">{{ a.quiz.title }}</span><span class="badge text-bg-success">{{ a.score }}/{{ a.total }}</span></li>
+        {% else %}<li class="list-group-item">{{ empty("Aucun quiz pour l'instant.") }}</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">Parties</div>
+      <ul class="list-group list-group-flush">
+        {% for s in scores %}
+        <li class="list-group-item d-flex justify-content-between gap-2"><span>{{ games[s.game_code].name if s.game_code in games else s.game_code }}</span><span class="text-muted small text-nowrap">{{ s.score }} pts · {{ s.created_at|date_fr }}</span></li>
+        {% else %}<li class="list-group-item">{{ empty("Aucune partie jouée.") }}</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

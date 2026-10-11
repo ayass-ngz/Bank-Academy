@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import csrf with context %}
+{% block title %}Paramètres{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Paramètres de la banque</h1>
+<form method="post" class="card" style="max-width: 640px">
+  <div class="card-body">
+    {{ csrf() }}
+    <div class="mb-3"><label class="form-label" for="name">Nom affiché</label><input class="form-control" id="name" name="name" value="{{ bank.name }}" maxlength="120" required></div>
+    <div class="mb-3">
+      <label class="form-label" for="primary_color">Couleur principale (marque blanche)</label>
+      <input type="color" class="form-control form-control-color" id="primary_color" name="primary_color" value="{{ bank.primary_color }}">
+    </div>
+    <div class="mb-3"><label class="form-label" for="welcome_message">Message d'accueil des clients</label><input class="form-control" id="welcome_message" name="welcome_message" value="{{ bank.welcome_message or '' }}" maxlength="255" placeholder="Prêt(e) à progresser aujourd'hui ?"></div>
+    <button class="btn btn-brand">Enregistrer</button>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,11 @@
+Flask>=2.3,<4
+Flask-SQLAlchemy>=3.1
+Flask-Login>=0.6.3
+Flask-WTF>=1.2
+Flask-Migrate>=4.0
+SQLAlchemy>=2.0
+python-dotenv>=1.0
+email-validator>=2.0
+# Drivers optionnels selon le SGBD choisi :
+# PyMySQL>=1.1          # MySQL / MariaDB  -> DATABASE_URL=mysql+pymysql://user:pwd@host/bank_academy
+# psycopg[binary]>=3.1  # PostgreSQL       -> DATABASE_URL=postgresql+psycopg://user:pwd@host/bank_academy

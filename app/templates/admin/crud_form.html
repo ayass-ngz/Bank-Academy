@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import csrf with context %}
+{% block title %}{{ entity.title }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.crud_list', slug=entity.slug) }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {{ entity.title }}</a>
+<h1 class="h3 mt-1 mb-4">{{ "Modifier" if obj else "Ajouter " ~ entity.singular }}</h1>
+<form method="post" class="card">
+  <div class="card-body">
+    {{ csrf() }}
+    {% for f in entity.fields %}
+      {% set value = form.get(f.name, "") if form else f.input_value(source) %}
+      <div class="mb-3">
+      {% if f.type == "bool" %}
+        {% set checked = (f.name in form) if form else (f.input_value(source) == "True") %}
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="{{ f.name }}" name="{{ f.name }}" {{ 'checked' if checked }}>
+          <label class="form-check-label" for="{{ f.name }}">{{ f.label }}</label>
+        </div>
+      {% else %}
+        <label class="form-label" for="{{ f.name }}">{{ f.label }}{% if f.required %} <span class="text-danger">*</span>{% endif %}</label>
+        {% if f.type == "textarea" %}
+          <textarea class="form-control" id="{{ f.name }}" name="{{ f.name }}" rows="{{ 6 if f.name in ('content', 'body', 'description') else 3 }}" {{ 'required' if f.required }}>{{ value }}</textarea>
+        {% elif f.type == "select" %}
+          <select class="form-select" id="{{ f.name }}" name="{{ f.name }}" {{ 'required' if f.required }}>
+            {% if not f.required %}<option value="">—</option>{% endif %}
+            {% for v, label in f.get_choices() %}<option value="{{ v }}" {{ 'selected' if v|string == value }}>{{ label }}</option>{% endfor %}
+          </select>
+        {% else %}
+          {% set input_type = {"url": "url", "int": "number", "date": "date", "datetime": "datetime-local"}.get(f.type, "text") %}
+          <input class="form-control" type="{{ input_type }}" id="{{ f.name }}" name="{{ f.name }}" value="{{ value }}" {{ 'required' if f.required }}>
+        {% endif %}
+      {% endif %}
+      {% if f.help %}<div class="form-text">{{ f.help }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <button class="btn btn-brand">Enregistrer</button>
+    <a href="{{ url_for('admin.crud_list', slug=entity.slug) }}" class="btn btn-link">Annuler</a>
+  </div>
+</form>
+{% endblock %}

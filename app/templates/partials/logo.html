@@ -1,0 +1,19 @@
+{# Logo Bank Academy : une toque de diplômé (savoir) avec un pompon doré (argent), aux couleurs de la banque. #}
+{% macro logo_mark(size=36) %}
+<svg class="logo-mark" width="{{ size }}" height="{{ size }}" viewBox="0 0 40 40" role="img" aria-label="Bank Academy">
+  <rect width="40" height="40" rx="11" fill="var(--brand)"/>
+  <polygon points="20,8.5 35,15.5 20,22.5 5,15.5" fill="#fff"/>
+  <path d="M11 19.8V25c0 2.6 4.4 4.6 9 4.6s9-2 9-4.6v-5.2L20 24.6z" fill="#fff" opacity=".88"/>
+  <path d="M33 16.6V25" stroke="#ffc800" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="33" cy="27" r="2.4" fill="#ffc800"/>
+</svg>
+{% endmacro %}
+
+{# Nom de la plateforme ; le nom de la banque cliente s'affiche en dessous s'il est différent. #}
+{% macro wordmark(bank=None) %}
+{{ logo_mark() }}
+<span class="logo-text">
+  <span class="logo-name">Bank Academy</span>
+  {% if bank and bank.name and bank.name != "Bank Academy" %}<span class="logo-sub">{{ bank.name }}</span>{% endif %}
+</span>
+{% endmacro %}

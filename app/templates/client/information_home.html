@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, empty, csrf with context %}
+{% block title %}{{ g.package.name }}{% endblock %}
+{% block content %}
+{{ pkg_header(g.package.description) }}
+
+<nav class="filter-chips mb-4" aria-label="Filtrer">
+  {% for code, label, _ in filters %}
+    <a href="{{ url_for('client.information_home', type=code or None) }}" class="filter-chip {{ 'active' if selected == code }}">{{ label }}</a>
+  {% endfor %}
+</nav>
+
+{% macro event_actions(a) %}
+<div class="d-flex flex-wrap gap-2 mt-3">
+  <form method="post" action="{{ url_for('client.information_rsvp', item_id=a.id) }}">
+    {{ csrf() }}
+    {% if a.id in registered %}
+      <button class="btn btn-sm btn-success"><i class="bi bi-check2-circle"></i> Je participe</button>
+    {% else %}
+      <button class="btn btn-sm btn-brand"><i class="bi bi-hand-thumbs-up"></i> Je participe</button>
+    {% endif %}
+  </form>
+  <a href="{{ url_for('client.information_ics', item_id=a.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-calendar-plus"></i> Ajouter à mon agenda</a>
+  {% if counts.get(a.id) %}<span class="small text-muted align-self-center"><i class="bi bi-people"></i> {{ counts[a.id] }} participant{{ 's' if counts[a.id] > 1 }}</span>{% endif %}
+</div>
+{% endmacro %}
+
+{% if featured %}
+<section class="info-featured mb-4" id="info-{{ featured.id }}">
+  <div class="info-date-big">
+    <span class="info-day">{{ featured.event_date.day }}</span>
+    <span class="info-month">{{ (featured.event_date|date_fr).split(' ')[1] }}</span>
+    <span class="info-time">{{ featured.event_date.strftime('%H:%M') }}</span>
+  </div>
+  <div class="flex-grow-1 min-w-0">
+    <div class="info-kicker">Prochain rendez-vous · {{ featured.kind_label }}</div>
+    <h2 class="h4 mb-1">{{ featured.title }}</h2>
+    {% if featured.location %}<div class="small text-muted mb-2"><i class="bi bi-geo-alt"></i> {{ featured.location }}</div>{% endif %}
+    <p class="mb-0">{{ featured.body|nl2br }}</p>
+    {{ event_actions(featured) }}
+  </div>
+</section>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <h2 class="section-title"><i class="bi bi-calendar-event"></i> Agenda</h2>
+    {% set rest = upcoming[1:] %}{# le premier évènement est mis en avant au-dessus #}
+    {% for a in rest %}
+      {% set month = (a.event_date|date_fr).split(' ')[1] ~ ' ' ~ a.event_date.year %}
+      {% if loop.first or month != ((rest[loop.index0 - 1].event_date|date_fr).split(' ')[1] ~ ' ' ~ rest[loop.index0 - 1].event_date.year) %}
+        <div class="agenda-month">{{ month }}</div>
+      {% endif %}
+      <div class="card mb-3 agenda-item" id="info-{{ a.id }}">
+        <div class="card-body d-flex gap-3">
+          <div class="event-date text-center">
+            <div class="event-day">{{ a.event_date.day }}</div>
+            <div class="event-month">{{ (a.event_date|date_fr).split(' ')[1] }}</div>
+          </div>
+          <div class="flex-grow-1 min-w-0">
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
+              <span class="badge bg-brand-soft text-brand">{{ a.kind_label }}</span>
+              {% if a.is_new %}<span class="badge text-bg-danger">Nouveau</span>{% endif %}
+            </div>
+            <h3 class="h6 mb-1">{{ a.title }}</h3>
+            <div class="small text-muted mb-1"><i class="bi bi-clock"></i> {{ a.event_date|datetime_fr }}{% if a.location %} · <i class="bi bi-geo-alt"></i> {{ a.location }}{% endif %}</div>
+            <p class="small mb-0">{{ a.body|nl2br }}</p>
+            {{ event_actions(a) }}
+          </div>
+        </div>
+      </div>
+    {% else %}
+      {% if not featured %}{{ empty("Aucun évènement prévu pour le moment.", "bi-calendar") }}{% else %}<p class="text-muted small">Pas d'autre évènement prévu pour l'instant.</p>{% endif %}
+    {% endfor %}
+  </div>
+  <div class="col-lg-5">
+    <h2 class="section-title"><i class="bi bi-megaphone"></i> Annonces</h2>
+    {% for a in announcements %}
+    <div class="card mb-3 info-note {{ 'is-new' if a.is_new }}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between gap-2 mb-1">
+          <span class="badge bg-brand-soft text-brand">{{ a.kind_label }}</span>
+          <span class="small text-muted">{% if a.is_new %}<span class="badge text-bg-danger me-1">Nouveau</span>{% endif %}{{ a.created_at|date_fr }}</span>
+        </div>
+        <h3 class="h6 mb-1">{{ a.title }}</h3>
+        <p class="small mb-0">{{ a.body|nl2br }}</p>
+        {% if a.event_date %}<div class="small text-muted mt-2"><i class="bi bi-calendar-check"></i> Évènement passé ({{ a.event_date|date_fr }})</div>{% endif %}
+      </div>
+    </div>
+    {% else %}{{ empty("Aucune annonce.", "bi-bell") }}{% endfor %}
+  </div>
+</div>
+{% endblock %}

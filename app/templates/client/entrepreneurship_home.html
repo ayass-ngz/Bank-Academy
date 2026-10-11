@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, empty with context %}
+{% block title %}{{ g.package.name }}{% endblock %}
+{% block content %}
+{{ pkg_header(g.package.description) }}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <h2 class="h5 mb-3"><i class="bi bi-signpost-split"></i> Incuber ton projet, étape par étape</h2>
+    <div class="accordion" id="steps">
+      {% for code, label, items in by_category %}
+      <div class="accordion-item">
+        <h3 class="accordion-header">
+          <button class="accordion-button {{ 'collapsed' if not loop.first }}" type="button" data-bs-toggle="collapse" data-bs-target="#step-{{ code }}" aria-expanded="{{ 'true' if loop.first else 'false' }}">
+            {{ label }} <span class="badge text-bg-light border ms-2">{{ items|length }}</span>
+          </button>
+        </h3>
+        <div id="step-{{ code }}" class="accordion-collapse collapse {{ 'show' if loop.first }}" data-bs-parent="#steps">
+          <div class="accordion-body">
+            {% for r in items %}
+              <a href="{{ url_for('client.resource_detail', resource_id=r.id) }}" class="d-block mb-2 text-decoration-none">
+                <span class="fw-semibold">{{ r.title }}</span><br><small class="text-muted">{{ r.summary }}</small>
+              </a>
+            {% else %}<p class="text-muted small mb-0">Ressources à venir.</p>{% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header bg-white d-flex justify-content-between"><span class="fw-semibold"><i class="bi bi-people"></i> Communauté</span><a href="{{ url_for('client.community') }}" class="small">Voir tout</a></div>
+      <ul class="list-group list-group-flush">
+        {% for p in posts %}
+        <li class="list-group-item">
+          <a href="{{ url_for('client.post_detail', post_id=p.id) }}" class="text-reset fw-semibold">{{ p.title }}</a><br>
+          <small class="text-muted">{{ post_categories.get(p.category) }} · {{ p.author.public_name }}</small>
+        </li>
+        {% else %}<li class="list-group-item">{{ empty("Aucune publication.") }}</li>{% endfor %}
+      </ul>
+      <div class="card-body"><a href="{{ url_for('client.community') }}" class="btn btn-brand w-100"><i class="bi bi-pencil"></i> Publier un post</a></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

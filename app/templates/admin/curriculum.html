@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Parcours{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">Programme pédagogique</h1>
+    <p class="text-muted mb-0">{{ totals.units }} unités · {{ totals.lessons }} leçons · {{ totals.cards }} fiches. Les unités d'une section se débloquent dans l'ordre pour l'élève.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('admin.crud_list', slug='lecons') }}" class="btn btn-outline-secondary btn-sm">Toutes les leçons</a>
+    <a href="{{ url_for('admin.crud_form', slug='unites') }}" class="btn btn-brand btn-sm"><i class="bi bi-plus-lg"></i> Nouvelle unité</a>
+  </div>
+</div>
+
+{% for spec, units in sections %}
+<section class="mb-4" style="--unit: {{ spec.color }}">
+  <h2 class="section-title d-flex align-items-center gap-2">
+    <span class="summary-icon summary-icon-sm"><i class="bi {{ spec.icon }}"></i></span> {{ spec.name }}
+  </h2>
+  <div class="accordion" id="acc-{{ spec.code }}">
+  {% for unit in units %}
+    <div class="accordion-item">
+      <h3 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#u{{ unit.id }}" aria-expanded="false">
+          <span class="me-2 text-muted">{{ loop.index }}.</span> {{ unit.title }}
+          <span class="ms-2 badge text-bg-light border">{{ unit.lessons|length }} leçons</span>
+          <span class="ms-1 badge bg-brand-soft text-brand">Niveau {{ ["Découverte", "Initié", "Confirmé", "Expert"][unit.level] }}</span>
+          {% if unit.band != 'all' %}<span class="ms-1 badge text-bg-secondary">{{ BANDS[unit.band] }}</span>{% endif %}
+          {% if not unit.active %}<span class="ms-1 badge text-bg-warning">Inactive</span>{% endif %}
+        </button>
+      </h3>
+      <div id="u{{ unit.id }}" class="accordion-collapse collapse" data-bs-parent="#acc-{{ spec.code }}">
+        <div class="accordion-body">
+          {% if unit.description %}<p class="text-muted small">{{ unit.description }}</p>{% endif %}
+          <ul class="list-group mb-3">
+            {% for lesson in unit.lessons %}
+            <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+              <span><i class="bi bi-star-fill" style="color: var(--unit)"></i> {{ lesson.title }}
+                <small class="text-muted">· {{ lesson.cards|selectattr('kind', 'equalto', 'theory')|list|length }} fiches de cours, {{ lesson.cards|rejectattr('kind', 'equalto', 'theory')|list|length }} exercices</small></span>
+              <span class="text-nowrap">
+                <a href="{{ url_for('admin.lesson_cards', lesson_id=lesson.id) }}" class="btn btn-sm btn-brand">Fiches</a>
+                <a href="{{ url_for('admin.crud_form', slug='lecons', obj_id=lesson.id) }}" class="btn btn-sm btn-outline-secondary" aria-label="Modifier"><i class="bi bi-pencil"></i></a>
+              </span>
+            </li>
+            {% else %}<li class="list-group-item text-muted">Aucune leçon.</li>{% endfor %}
+          </ul>
+          <a href="{{ url_for('admin.crud_form', slug='lecons', unit_id=unit.id, position=unit.lessons|length) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-plus-lg"></i> Ajouter une leçon</a>
+          <a href="{{ url_for('admin.crud_form', slug='unites', obj_id=unit.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Modifier l'unité</a>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p class="text-muted">Aucune unité dans cette section.</p>
+  {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Connexion{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-3">Connexion</h1>
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          {% for field in [form.email, form.password] %}
+          <div class="mb-3">
+            {{ field.label(class="form-label") }}
+            {{ field(class="form-control" ~ (" is-invalid" if field.errors else ""), autocomplete=("email" if field.name == "email" else "current-password")) }}
+            {% for e in field.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          </div>
+          {% endfor %}
+          <div class="form-check mb-3">{{ form.remember(class="form-check-input") }} {{ form.remember.label(class="form-check-label") }}</div>
+          <button class="btn btn-brand w-100">Se connecter</button>
+        </form>
+        <hr>
+        <p class="small mb-1">Pas encore de compte ?</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-outline-secondary">Je suis un jeune (10 – 24 ans)</a>
+          <a href="{{ url_for('auth.register', role='parent') }}" class="btn btn-sm btn-outline-secondary">Je suis parent</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

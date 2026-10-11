@@ -1,0 +1,68 @@
+{% from "partials/logo.html" import wordmark with context %}
+{% macro side_link(url, icon, label, color, active=False) %}
+<a class="side-link {{ 'active' if active }}" href="{{ url }}">
+  <span class="side-icon" style="color: {{ color }}"><i class="bi {{ icon }}"></i></span>
+  <span>{{ label }}</span>
+</a>
+{% endmacro %}
+{% set ep = request.endpoint or '' %}
+{% set slug = (request.view_args or {}).get('slug') %}
+
+<div class="offcanvas-header d-lg-none">
+  <span class="sidebar-logo mb-0">{{ wordmark(bank) }}</span>
+  <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Fermer"></button>
+</div>
+<div class="offcanvas-body">
+  <a class="sidebar-logo d-none d-lg-flex" href="{{ url_for('main.index') }}">{{ wordmark(bank) }}</a>
+  <nav class="side-nav">
+  {% if current_user.role == 'client' %}
+    {{ side_link(url_for('client.dashboard'), 'bi-house-door-fill', 'Accueil', '#e8890c', ep == 'client.dashboard') }}
+    {{ side_link(url_for('client.parcours'), 'bi-signpost-2-fill', 'Mon parcours', '#2b8a3e', ep in ('client.parcours', 'client.lesson_play')) }}
+    {% for p in nav_packages %}
+      {{ side_link(url_for(CATALOG[p.code].endpoint), CATALOG[p.code].icon, p.name, CATALOG[p.code].color, g.package and g.package.code == p.code) }}
+    {% endfor %}
+    {{ side_link(url_for('client.profile'), 'bi-person-circle', 'Profil', '#ce82ff', ep == 'client.profile') }}
+
+  {% elif current_user.role == 'parent' %}
+    {{ side_link(url_for('parent.dashboard'), 'bi-house-heart-fill', 'Tableau de bord', '#ff9600', ep == 'parent.dashboard') }}
+    {% for child in current_user.children %}
+      {{ side_link(url_for('parent.child_detail', child_id=child.id), 'bi-person-fill', child.first_name, '#2f6fed', ep == 'parent.child_detail' and request.view_args.child_id == child.id) }}
+    {% endfor %}
+
+  {% elif current_user.role == 'admin' %}
+    {{ side_link(url_for('admin.dashboard'), 'bi-speedometer2', 'Tableau de bord', '#ff9600', ep == 'admin.dashboard') }}
+    {{ side_link(url_for('admin.packages'), 'bi-boxes', 'Packages', '#ce82ff', ep == 'admin.packages') }}
+    {{ side_link(url_for('admin.curriculum'), 'bi-signpost-2-fill', 'Parcours', '#58cc02', ep in ('admin.curriculum', 'admin.lesson_cards') or slug in ('unites', 'lecons')) }}
+    <div class="side-section">Éducation avancée</div>
+    {{ side_link(url_for('admin.crud_list', slug='podcasts'), 'bi-headphones', 'Podcasts', '#1cb0f6', slug == 'podcasts') }}
+    {{ side_link(url_for('admin.crud_list', slug='actualites'), 'bi-newspaper', 'Actualités', '#1cb0f6', slug == 'actualites') }}
+    {{ side_link(url_for('admin.quizzes'), 'bi-lightning-charge-fill', 'Quiz', '#ffc800', ep.startswith('admin.quiz') or ep == 'admin.question_add') }}
+    {{ side_link(url_for('admin.qa_list'), 'bi-chat-square-text-fill', 'Questions', '#1cb0f6', ep.startswith('admin.qa')) }}
+    <div class="side-section">Entrepreneuriat</div>
+    {{ side_link(url_for('admin.crud_list', slug='ressources'), 'bi-book-fill', 'Ressources', '#ff9600', slug == 'ressources') }}
+    {{ side_link(url_for('admin.community'), 'bi-shield-check', 'Modération', '#ff9600', ep == 'admin.community') }}
+    <div class="side-section">Éducation basique</div>
+    {{ side_link(url_for('admin.crud_list', slug='vrai-faux'), 'bi-patch-question-fill', 'Vrai ou Faux', '#58cc02', slug == 'vrai-faux') }}
+    <div class="side-section">Annonces</div>
+    {{ side_link(url_for('admin.crud_list', slug='annonces-parents'), 'bi-people-fill', 'Suivi parental', '#ce82ff', slug == 'annonces-parents') }}
+    {{ side_link(url_for('admin.crud_list', slug='evenements'), 'bi-info-circle-fill', 'Information', '#e03e3e', slug == 'evenements' or ep == 'admin.event_registrations') }}
+    <div class="side-section">Offres</div>
+    {{ side_link(url_for('admin.crud_list', slug='offres'), 'bi-bank2', 'Offres', '#00cd9c', slug == 'offres') }}
+    {{ side_link(url_for('admin.interests'), 'bi-briefcase-fill', 'Prospects', '#00cd9c', ep == 'admin.interests') }}
+    <div class="side-section">Gestion</div>
+    {{ side_link(url_for('admin.users'), 'bi-person-badge-fill', 'Utilisateurs', '#1cb0f6', ep.startswith('admin.user')) }}
+    {{ side_link(url_for('admin.settings'), 'bi-gear-fill', 'Paramètres', '#777777', ep == 'admin.settings') }}
+  {% endif %}
+  </nav>
+
+  <div class="side-footer">
+    <div class="side-user">
+      <span class="avatar">{{ current_user.first_name[:1] }}</span>
+      <span class="text-truncate">{{ current_user.full_name }}</span>
+    </div>
+    <form method="post" action="{{ url_for('auth.logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="side-link w-100 border-0 bg-transparent"><span class="side-icon" style="color:#afafaf"><i class="bi bi-box-arrow-right"></i></span><span>Déconnexion</span></button>
+    </form>
+  </div>
+</div>

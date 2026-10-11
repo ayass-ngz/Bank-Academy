@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, csrf with context %}
+{% block title %}{{ question.title }}{% endblock %}
+{% block content %}
+{{ pkg_header(back=url_for('client.qa_list')) }}
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="h5">{{ question.title }}</h2>
+    <p>{{ question.body|nl2br }}</p>
+    <small class="text-muted">{{ question.author.public_name }} · {{ question.created_at|datetime_fr }}</small>
+  </div>
+</div>
+<h3 class="h6 mb-3">{{ question.answers|length }} réponse(s)</h3>
+{% for a in question.answers|sort(attribute='is_official', reverse=True) %}
+<div class="card mb-2 {{ 'border-success' if a.is_official }}">
+  <div class="card-body py-2">
+    {% if a.is_official %}<span class="badge bg-success mb-1"><i class="bi bi-patch-check"></i> Réponse officielle de {{ bank.name }}</span>{% endif %}
+    <p class="mb-1">{{ a.body|nl2br }}</p>
+    <small class="text-muted">{{ "Conseiller" if a.is_official else a.author.public_name }} · {{ a.created_at|datetime_fr }}</small>
+  </div>
+</div>
+{% endfor %}
+<form method="post" class="card mt-3">
+  <div class="card-body">
+    {{ csrf() }}
+    <label class="form-label" for="body">Ta réponse</label>
+    <textarea class="form-control mb-2" id="body" name="body" rows="3" required></textarea>
+    <button class="btn btn-brand">Répondre</button>
+  </div>
+</form>
+{% endblock %}

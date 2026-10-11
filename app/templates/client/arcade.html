@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% set layout = "lesson" %}
+{% block title %}{{ game.name }}{% endblock %}
+{% block lesson %}
+<div class="lesson-shell arcade" id="arcade" style="--game: {{ game.color }}"
+     data-engine="{{ game.engine }}" data-action-url="{{ action_url }}" data-finish-url="{{ finish_url }}"
+     data-home-url="{{ home_url }}" data-replay-url="{{ replay_url }}">
+  <header class="lesson-top">
+    <a href="{{ home_url }}" class="lesson-close" aria-label="Quitter le jeu"><i class="bi bi-x-lg"></i></a>
+    <div class="arcade-title"><span class="arcade-title-icon"><i class="bi {{ game.icon }}"></i></span> {{ game.name }}</div>
+    <div class="arcade-status" id="arcade-status" aria-live="polite"></div>
+  </header>
+  <main class="arcade-body">
+    <p class="arcade-instruction" id="arcade-instruction">{{ game.instruction }}</p>
+    <div id="arcade-board" class="arcade-board"></div>
+  </main>
+  <footer class="lesson-footer" id="arcade-footer">
+    <div class="lesson-footer-inner">
+      <div id="arcade-feedback" class="lesson-feedback" aria-live="polite"></div>
+      <div class="d-flex gap-2 flex-wrap" id="arcade-actions"></div>
+    </div>
+  </footer>
+</div>
+<script id="arcade-data" type="application/json">{{ public|tojson }}</script>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/arcade/common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/arcade/' ~ game.engine ~ '.js') }}"></script>
+{% endblock %}

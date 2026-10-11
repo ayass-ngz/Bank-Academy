@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Créer le compte de mon enfant{% endblock %}
+{% block content %}
+<a href="{{ url_for('parent.dashboard') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Tableau de bord</a>
+<div class="row g-4 mt-1">
+  <div class="col-lg-7">
+    <h1 class="h3 mb-1">Créer le compte de mon enfant</h1>
+    <p class="text-muted">Pour les 10 – 17 ans, c'est le parent qui ouvre le compte. Votre enfant recevra ses identifiants par e-mail.</p>
+    <form method="post" class="card">
+      <div class="card-body">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="row">
+          <div class="col-sm-6 mb-3"><label class="form-label" for="first_name">Prénom</label>
+            <input class="form-control" id="first_name" name="first_name" value="{{ form.get('first_name', '') }}" required></div>
+          <div class="col-sm-6 mb-3"><label class="form-label" for="last_name">Nom</label>
+            <input class="form-control" id="last_name" name="last_name" value="{{ form.get('last_name', current_user.last_name) }}" required></div>
+        </div>
+        <div class="mb-3"><label class="form-label" for="birth_date">Date de naissance</label>
+          <input class="form-control" type="date" id="birth_date" name="birth_date" value="{{ form.get('birth_date', '') }}" required></div>
+        <div class="mb-4"><label class="form-label" for="email">Adresse e-mail de votre enfant</label>
+          <input class="form-control" type="email" id="email" name="email" value="{{ form.get('email', '') }}" required>
+          <div class="form-text">Ses identifiants y seront envoyés. Elle lui servira d'identifiant de connexion.</div></div>
+        <button class="btn btn-brand btn-lg w-100"><i class="bi bi-person-plus"></i> Créer le compte et envoyer les identifiants</button>
+      </div>
+    </form>
+  </div>
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="h6">Comment ça se passe ?</h2>
+        <ol class="onboard-steps">
+          <li><strong>Vous créez le compte</strong><span>Il est automatiquement rattaché à votre espace parent.</span></li>
+          <li><strong>Votre enfant reçoit un e-mail</strong><span>avec son identifiant et un mot de passe provisoire.</span></li>
+          <li><strong>À sa première connexion</strong><span>il choisit son propre mot de passe.</span></li>
+          <li><strong>Il passe un test de niveau</strong><span>10 questions pour ouvrir les leçons adaptées à ses connaissances.</span></li>
+        </ol>
+        <p class="small text-muted mb-0"><i class="bi bi-shield-check"></i> Vous suivez ensuite sa progression depuis votre tableau de bord.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "client/_welcome_shell.html" %}
+{% from "partials/macros.html" import mascot with context %}
+{% set steps = 3 %}
+{% block title %}Ton niveau{% endblock %}
+{% block welcome %}
+<div class="welcome-card welcome-wide">
+  <div class="welcome-plant">{{ mascot("", [current_user.level, 3]|min) }}</div>
+  <div class="text-muted small fw-semibold text-uppercase">Ton niveau</div>
+  <h1 class="welcome-level-name"><i class="bi {{ level.icon }}"></i> {{ level.name }}</h1>
+  {% if result.correct is not none %}
+    <p class="mb-1 fw-semibold">{{ result.correct }} bonne{{ 's' if result.correct > 1 }} réponse{{ 's' if result.correct > 1 }} sur {{ result.total }}
+      {% if result.confidence %}· estimation fiable à {{ result.confidence }} %{% endif %}</p>
+  {% endif %}
+  <p class="text-muted">{{ level.text }}</p>
+
+  {% if result.tiers %}
+  <div class="pl-trace" aria-label="Difficulté des questions posées">
+    {% for t in result.tiers %}<span class="pl-trace-bar" style="--h: {{ 30 + t * 35 }}%" title="Question {{ loop.index }} : {{ levels[t].name }}"></span>{% endfor %}
+  </div>
+  <p class="small text-muted">Difficulté des 20 questions : le test s'est ajusté à tes réponses.</p>
+  {% endif %}
+
+  <div class="welcome-ladder">
+    {% for lvl in levels %}
+      <div class="welcome-rung {{ 'reached' if loop.index0 <= current_user.level }}">
+        <i class="bi {{ lvl.icon if loop.index0 <= current_user.level else 'bi-lock-fill' }}"></i><span>{{ lvl.name }}</span>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% for s in sections %}
+    {% set acquired = s.units|selectattr('opened_by_test')|list %}
+    {% set blocked = s.units|selectattr('blocked')|list %}
+    {% set current = s.units|selectattr('level', 'equalto', current_user.level)|list %}
+    <div class="welcome-unlocked" style="--unit: {{ s.color }}">
+      <div class="fw-bold mb-1"><i class="bi {{ s.icon }}"></i> {{ s.package.name }}</div>
+      <ul>
+        {% if acquired %}<li><i class="bi bi-check2-all"></i> {{ acquired|length }} unité{{ 's' if acquired|length > 1 }} acquise{{ 's' if acquired|length > 1 }}, ouvertes pour réviser</li>{% endif %}
+        {% if current %}<li><i class="bi bi-play-circle-fill"></i> À toi de jouer : {{ current|map(attribute='title')|join(', ') }}</li>{% endif %}
+        {% if blocked %}<li class="text-muted"><i class="bi bi-lock-fill"></i> {{ blocked|length }} unité{{ 's' if blocked|length > 1 }} des niveaux supérieurs, verrouillée{{ 's' if blocked|length > 1 }} pour l'instant</li>{% endif %}
+      </ul>
+    </div>
+  {% endfor %}
+  <p class="small text-muted">Termine les unités de ton niveau pour débloquer automatiquement le niveau suivant.</p>
+
+  <a href="{{ url_for('client.dashboard') }}" class="btn btn-brand btn-lg w-100 mt-2">Découvrir mon espace</a>
+</div>
+{% endblock %}

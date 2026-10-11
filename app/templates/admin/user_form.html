@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import csrf with context %}
+{% block title %}Nouveau compte{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.users') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Utilisateurs</a>
+<h1 class="h3 mt-1 mb-4">Nouveau compte</h1>
+<form method="post" class="card" style="max-width: 640px">
+  <div class="card-body">
+    {{ csrf() }}
+    <label class="form-label" for="role">Rôle</label>
+    <select class="form-select mb-3" id="role" name="role" data-toggle-birth>
+      {% for code, label in roles.items() %}<option value="{{ code }}" {{ 'selected' if form.get('role', 'client') == code }}>{{ label }}</option>{% endfor %}
+    </select>
+    <div class="row">
+      <div class="col-sm-6 mb-3"><label class="form-label" for="first_name">Prénom</label><input class="form-control" id="first_name" name="first_name" value="{{ form.get('first_name', '') }}" required></div>
+      <div class="col-sm-6 mb-3"><label class="form-label" for="last_name">Nom</label><input class="form-control" id="last_name" name="last_name" value="{{ form.get('last_name', '') }}" required></div>
+    </div>
+    <div class="mb-3"><label class="form-label" for="email">E-mail</label><input type="email" class="form-control" id="email" name="email" value="{{ form.get('email', '') }}" required></div>
+    <div class="mb-3" id="birth-row"><label class="form-label" for="birth_date">Date de naissance (clients : 10 – 24 ans)</label><input type="date" class="form-control" id="birth_date" name="birth_date" value="{{ form.get('birth_date', '') }}"></div>
+    <div class="mb-3"><label class="form-label" for="password">Mot de passe provisoire</label><input type="password" class="form-control" id="password" name="password" minlength="8" required autocomplete="new-password">
+      <div class="form-text">Un client devra le changer à sa première connexion, puis passer le test de niveau.</div></div>
+    <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="send_credentials" name="send_credentials" checked>
+      <label class="form-check-label" for="send_credentials">Envoyer les identifiants par e-mail au client</label></div>
+    <button class="btn btn-brand">Créer le compte</button>
+  </div>
+</form>
+{% endblock %}

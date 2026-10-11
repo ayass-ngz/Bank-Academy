@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import csrf, empty with context %}
+{% from "partials/path.html" import path_summary with context %}
+{% block title %}{{ user.full_name }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.users') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Utilisateurs</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-1 mb-4">
+  <div>
+    <h1 class="h3 mb-0">{{ user.full_name }}</h1>
+    <span class="text-muted">{{ roles[user.role] }} · {{ user.email }}{% if user.role == 'client' %} · {{ user.age }} ans ({{ BANDS[user.band] }}) ·
+      {% if user.must_change_password %}première connexion en attente{% elif not user.onboarded_at %}test de niveau à passer{% else %}<i class="bi {{ levels[user.level].icon }}"></i> Niveau {{ levels[user.level].name }}{% endif %}{% endif %}</span>
+  </div>
+  {% if user.id != current_user.id %}
+  <form method="post" action="{{ url_for('admin.user_toggle', user_id=user.id) }}">{{ csrf() }}
+    <button class="btn btn-outline-secondary">{{ "Désactiver" if user.active else "Réactiver" }}</button>
+  </form>
+  {% endif %}
+</div>
+{% if user.role == 'client' %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value">{{ user.points }}</div><div class="stat-label">points</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value">{{ user.effective_streak }}</div><div class="stat-label">série actuelle</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value">{{ user.best_streak }}</div><div class="stat-label">meilleure série</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value">{{ user.parents|length }}</div><div class="stat-label">parent(s) rattaché(s)</div></div></div>
+</div>
+<div class="card mb-4"><div class="card-header">Avancement des parcours</div><div class="card-body">{{ path_summary(sections) }}</div></div>
+<div class="row g-4">
+  <div class="col-lg-6"><div class="card"><div class="card-header bg-white fw-semibold">Quiz</div><ul class="list-group list-group-flush">
+    {% for a in attempts %}<li class="list-group-item d-flex justify-content-between"><span>{{ a.quiz.title }}</span><span class="small text-muted">{{ a.score }}/{{ a.total }}</span></li>{% else %}<li class="list-group-item">{{ empty("Aucun quiz.") }}</li>{% endfor %}
+  </ul></div></div>
+  <div class="col-lg-6"><div class="card"><div class="card-header bg-white fw-semibold">Jeux</div><ul class="list-group list-group-flush">
+    {% for s in scores %}<li class="list-group-item d-flex justify-content-between"><span>{{ games[s.game_code].name if s.game_code in games else s.game_code }}</span><span class="small text-muted">{{ s.score }} pts · {{ s.created_at|datetime_fr }}</span></li>{% else %}<li class="list-group-item">{{ empty("Aucune partie.") }}</li>{% endfor %}
+  </ul></div></div>
+</div>
+{% elif user.role == 'parent' %}
+<div class="card"><div class="card-header bg-white fw-semibold">Enfants rattachés</div><ul class="list-group list-group-flush">
+  {% for c in user.children %}<li class="list-group-item"><a href="{{ url_for('admin.user_detail', user_id=c.id) }}">{{ c.full_name }}</a> ({{ c.age }} ans)</li>{% else %}<li class="list-group-item text-muted">Aucun.</li>{% endfor %}
+</ul></div>
+{% endif %}
+{% endblock %}

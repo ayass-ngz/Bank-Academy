@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, empty with context %}
+{% block title %}{{ g.package.name }}{% endblock %}
+{% block content %}
+{{ pkg_header(g.package.description) }}
+
+<nav class="filter-chips mb-4" aria-label="Catégories de jeux">
+  <a href="#jeux" class="filter-chip active" data-game-filter="">Tous les jeux · {{ games|length }}</a>
+  {% for code, label, icon in categories %}
+    <a href="#jeux" class="filter-chip" data-game-filter="{{ code }}"><i class="bi {{ icon }}"></i> {{ label }}</a>
+  {% endfor %}
+</nav>
+
+<div class="row g-4">
+  <div class="col-xl-8">
+    {% for code, label, icon in categories %}
+    <section class="game-group mb-4" data-game-group="{{ code }}" id="{{ 'jeux' if loop.first }}">
+      <h2 class="section-title"><i class="bi {{ icon }}"></i> {{ label }}</h2>
+      <div class="row g-3">
+        {% for gcode, game in games.items() if game.category == code %}
+        <div class="col-sm-6">
+          <a href="{{ url_for('client.game_play', code=gcode) }}" class="game-tile" style="--game: {{ game.color }}">
+            <span class="game-tile-art"><i class="bi {{ game.icon }}"></i></span>
+            <span class="game-tile-body">
+              <span class="game-tile-name">{{ game.name }}</span>
+              <span class="game-tile-desc">{{ game.description }}</span>
+              <span class="game-tile-meta">
+                {% if best.get(gcode) is not none %}<i class="bi bi-trophy-fill"></i> Record : {{ best[gcode] }} pts{% else %}<i class="bi bi-stars"></i> Pas encore joué{% endif %}
+              </span>
+            </span>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+    <div class="alert alert-info small mb-0">
+      <i class="bi bi-info-circle"></i> Les {{ config.GAME_DAILY_SCORED_PLAYS }} premières parties de chaque jeu rapportent des points chaque jour.
+      Tu peux rejouer autant que tu veux pour t'entraîner !
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="card">
+      <div class="card-header">
+        <span><i class="bi bi-trophy"></i> Classement {{ BANDS[current_user.band] }}</span>
+        <ul class="nav nav-pills mt-2" role="tablist">
+          <li class="nav-item"><button class="nav-link active py-1" data-bs-toggle="pill" data-bs-target="#board-points" type="button">Score</button></li>
+          <li class="nav-item"><button class="nav-link py-1" data-bs-toggle="pill" data-bs-target="#board-streak" type="button">Jours d'affilée</button></li>
+        </ul>
+      </div>
+      <div class="tab-content">
+        {% for id, board, value, unit in [("board-points", points_board, "points", "pts"), ("board-streak", streak_board, "effective_streak", "j")] %}
+        <div class="tab-pane fade {{ 'show active' if loop.first }}" id="{{ id }}">
+          {% for u in board %}
+          <div class="leader-row mx-2 {{ 'me' if u.id == current_user.id }}">
+            <span class="leader-pos">{{ loop.index }}</span>
+            <span class="avatar">{{ u.first_name[:1] }}</span>
+            <span class="flex-grow-1 text-truncate">{{ u.public_name }}{% if u.id == current_user.id %} (toi){% endif %}</span>
+            <span class="leader-points">{{ u[value] }} {{ unit }}</span>
+          </div>
+          {% else %}{{ empty("Personne pour l'instant !") }}{% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

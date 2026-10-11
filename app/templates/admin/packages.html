@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import csrf with context %}
+{% block title %}Packages{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Packages</h1>
+<p class="text-muted">Activez, renommez et réordonnez les packages proposés à vos clients, et choisissez la tranche d'âge pour laquelle chacun est <em>recommandé</em>.</p>
+<div class="alert alert-info small">
+  <i class="bi bi-shield-lock"></i> Règles d'accès imposées (non modifiables) :
+  le package <strong>Offres de la banque</strong> n'est jamais accessible aux 10 – 17 ans ;
+  le package <strong>Suivi parental</strong> n'est pas affiché aux 18 – 24 ans.
+</div>
+<form method="post">
+  {{ csrf() }}
+  <div class="row g-3">
+  {% for p in packages %}
+    {% set prefix = "p" ~ p.id ~ "_" %}
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="pkg-icon"><i class="bi {{ p.icon }}"></i></span>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="{{ prefix }}enabled" name="{{ prefix }}enabled" {{ 'checked' if p.enabled }}>
+              <label class="form-check-label" for="{{ prefix }}enabled">Activé</label>
+            </div>
+          </div>
+          <label class="form-label small mb-1" for="{{ prefix }}name">Nom affiché</label>
+          <input class="form-control mb-2" id="{{ prefix }}name" name="{{ prefix }}name" value="{{ p.name }}" maxlength="80" required>
+          <label class="form-label small mb-1" for="{{ prefix }}description">Description</label>
+          <textarea class="form-control mb-2" id="{{ prefix }}description" name="{{ prefix }}description" rows="2" maxlength="255">{{ p.description or "" }}</textarea>
+          <div class="row g-2">
+            <div class="col-8">
+              <label class="form-label small mb-1" for="{{ prefix }}band">Recommandé pour</label>
+              <select class="form-select" id="{{ prefix }}band" name="{{ prefix }}band">
+                {% for value, label in band_choices %}<option value="{{ value }}" {{ 'selected' if p.recommended_band == value }}>{{ label }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-4">
+              <label class="form-label small mb-1" for="{{ prefix }}position">Ordre</label>
+              <input type="number" class="form-control" id="{{ prefix }}position" name="{{ prefix }}position" value="{{ p.position }}">
+            </div>
+          </div>
+          <div class="small text-muted mt-2">Package d'origine : {{ catalog[p.code].name }}</div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  </div>
+  <button class="btn btn-brand btn-lg mt-3">Enregistrer</button>
+</form>
+{% endblock %}

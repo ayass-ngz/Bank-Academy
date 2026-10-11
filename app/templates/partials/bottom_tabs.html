@@ -1,0 +1,10 @@
+{% set ep = request.endpoint or '' %}
+<nav class="bottom-tabs d-lg-none" aria-label="Navigation rapide">
+  <a href="{{ url_for('client.dashboard') }}" class="{{ 'active' if ep == 'client.dashboard' }}" aria-label="Accueil"><i class="bi bi-house-door-fill" style="color:#e8890c"></i></a>
+  <a href="{{ url_for('client.parcours') }}" class="{{ 'active' if ep == 'client.parcours' }}" aria-label="Mon parcours"><i class="bi bi-signpost-2-fill" style="color:#2b8a3e"></i></a>
+  {% for p in nav_packages if p.code in ('education_basic', 'education_advanced', 'entrepreneurship') %}
+  <a href="{{ url_for(CATALOG[p.code].endpoint) }}" class="{{ 'active' if g.package and g.package.code == p.code }}" aria-label="{{ p.name }}"><i class="bi {{ CATALOG[p.code].icon }}" style="color: {{ CATALOG[p.code].color }}"></i></a>
+  {% endfor %}
+  <a href="{{ url_for('client.profile') }}" class="{{ 'active' if ep == 'client.profile' }}" aria-label="Profil"><i class="bi bi-person-circle" style="color:#ce82ff"></i></a>
+  <button type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-label="Plus"><i class="bi bi-three-dots" style="color:#afafaf"></i></button>
+</nav>

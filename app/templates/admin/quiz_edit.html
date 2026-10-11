@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import csrf, confirm_delete with context %}
+{% block title %}{{ quiz.title }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.quizzes') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Quiz</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-1 mb-4">
+  <h1 class="h3 mb-0">{{ quiz.title }}</h1>
+  {{ confirm_delete(url_for('admin.quiz_delete', quiz_id=quiz.id), "Supprimer le quiz", small=False) }}
+</div>
+<div class="row g-4">
+  <div class="col-lg-4">
+    <form method="post" class="card mb-4">
+      <div class="card-body">
+        {{ csrf() }}
+        <h2 class="h6">Paramètres</h2>
+        <input name="title" class="form-control mb-2" value="{{ quiz.title }}" required>
+        <textarea name="description" class="form-control mb-2" rows="2">{{ quiz.description or "" }}</textarea>
+        <input type="date" name="publish_date" class="form-control mb-2" value="{{ quiz.publish_date.isoformat() }}" required>
+        <select name="band" class="form-select mb-3">{% for v, l in band_choices %}<option value="{{ v }}" {{ 'selected' if quiz.band == v }}>{{ l }}</option>{% endfor %}</select>
+        <button class="btn btn-brand w-100">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+  <div class="col-lg-8">
+    {% for q in quiz.questions %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between gap-2">
+          <p class="fw-semibold mb-2">{{ loop.index }}. {{ q.text }}</p>
+          {{ confirm_delete(url_for('admin.question_delete', question_id=q.id), "") }}
+        </div>
+        <ul class="list-unstyled small mb-1">
+          {% for c in q.choices %}<li class="{{ 'text-success fw-semibold' if c.is_correct }}"><i class="bi {{ 'bi-check-circle-fill' if c.is_correct else 'bi-circle' }}"></i> {{ c.text }}</li>{% endfor %}
+        </ul>
+        {% if q.explanation %}<div class="small text-muted"><i class="bi bi-lightbulb"></i> {{ q.explanation }}</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    <form method="post" action="{{ url_for('admin.question_add', quiz_id=quiz.id) }}" class="card border-brand">
+      <div class="card-body">
+        {{ csrf() }}
+        <h2 class="h6">Ajouter une question</h2>
+        <input name="text" class="form-control mb-2" placeholder="Intitulé de la question" required>
+        {% for i in range(1, 5) %}
+        <div class="input-group mb-2">
+          <div class="input-group-text"><input class="form-check-input mt-0" type="radio" name="correct" value="{{ i }}" {{ 'checked' if i == 1 }} aria-label="Bonne réponse"></div>
+          <input name="choice_{{ i }}" class="form-control" placeholder="Réponse {{ i }}{{ ' (optionnelle)' if i > 2 }}" {{ 'required' if i <= 2 }}>
+        </div>
+        {% endfor %}
+        <div class="form-text mb-2">Cochez la bonne réponse.</div>
+        <textarea name="explanation" class="form-control mb-2" rows="2" placeholder="Explication affichée après la réponse (optionnel)"></textarea>
+        <button class="btn btn-brand">Ajouter</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

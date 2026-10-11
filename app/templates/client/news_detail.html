@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header with context %}
+{% block title %}{{ article.title }}{% endblock %}
+{% block content %}
+{{ pkg_header(back=url_for('client.news_list')) }}
+<article class="card">
+  {% if article.image_url %}<img src="{{ article.image_url }}" class="card-img-top article-img" alt="">{% endif %}
+  <div class="card-body p-md-4">
+    <div class="small text-muted mb-2">{{ article.published_at|datetime_fr }}</div>
+    <h2 class="h3">{{ article.title }}</h2>
+    {% if article.summary %}<p class="lead">{{ article.summary }}</p>{% endif %}
+    <div class="article-content">{{ article.content|nl2br }}</div>
+    {% if article.source_url %}<p class="mt-3 small"><a href="{{ article.source_url }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-link-45deg"></i> Source</a></p>{% endif %}
+  </div>
+</article>
+{% endblock %}

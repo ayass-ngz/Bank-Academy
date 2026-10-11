@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, empty, band_badge, csrf with context %}
+{% block title %}Podcasts{% endblock %}
+{% block content %}
+{{ pkg_header("Le feed de podcasts", back=url_for('client.advanced_home')) }}
+{% for p in podcasts %}
+<div class="card mb-3" id="podcast-{{ p.id }}">
+  <div class="card-body">
+    <div class="d-flex flex-wrap justify-content-between gap-2">
+      <h2 class="h5 mb-1">{{ p.title }}</h2>
+      <small class="text-muted">{{ p.published_at|date_fr }}{{ " · " ~ p.duration_min ~ " min" if p.duration_min }} {{ band_badge(p.band) }}</small>
+    </div>
+    {% if p.description %}<p class="text-muted small">{{ p.description|nl2br }}</p>{% endif %}
+    {% if p.audio_url %}<audio controls preload="none" class="w-100" src="{{ p.audio_url }}"></audio>{% endif %}
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      {% if p.external_url %}<a href="{{ p.external_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-up-right"></i> Écouter sur la plateforme</a>{% endif %}
+      {% if p.id in listened %}
+        <span class="btn btn-sm btn-success disabled"><i class="bi bi-check-lg"></i> Écouté</span>
+      {% else %}
+        <form method="post" action="{{ url_for('client.podcast_listened', podcast_id=p.id) }}">{{ csrf() }}<button class="btn btn-sm btn-brand"><i class="bi bi-headphones"></i> Marquer comme écouté</button></form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% else %}{{ empty("Aucun podcast publié pour le moment.", "bi-headphones") }}{% endfor %}
+{% endblock %}

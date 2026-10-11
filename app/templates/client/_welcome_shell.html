@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/logo.html" import wordmark with context %}
+{% set layout = "lesson" %}
+{% block lesson %}
+<div class="welcome-shell">
+  <header class="welcome-top">
+    <span class="sidebar-logo mb-0 p-0">{{ wordmark(bank) }}</span>
+    <form method="post" action="{{ url_for('auth.logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-sm btn-link text-muted"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
+    </form>
+  </header>
+  {% if steps is defined %}
+  <ol class="welcome-steps" aria-label="Étapes">
+    {% for label in ["Mot de passe", "Test de positionnement", "Ton parcours"] %}
+      <li class="{{ 'done' if loop.index < steps else ('active' if loop.index == steps) }}"><span>{{ loop.index }}</span> {{ label }}</li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+  <main class="welcome-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}
+    {% endwith %}
+    {% block welcome %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

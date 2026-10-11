@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, empty, band_badge with context %}
+{% block title %}Actualités{% endblock %}
+{% block content %}
+{{ pkg_header("Actualités financières", back=url_for('client.advanced_home')) }}
+<div class="row g-3">
+{% for n in news %}
+  <div class="col-md-6 col-lg-4">
+    <a href="{{ url_for('client.news_detail', article_id=n.id) }}" class="card h-100 text-decoration-none text-reset news-card">
+      {% if n.image_url %}<img src="{{ n.image_url }}" class="card-img-top" alt="" loading="lazy">{% endif %}
+      <div class="card-body">
+        <div class="small text-muted mb-1">{{ n.published_at|date_fr }} {{ band_badge(n.band) }}</div>
+        <h2 class="h6">{{ n.title }}</h2>
+        <p class="small text-muted mb-0">{{ n.summary }}</p>
+      </div>
+    </a>
+  </div>
+{% else %}<div class="col-12">{{ empty("Aucune actualité.", "bi-newspaper") }}</div>{% endfor %}
+</div>
+{% endblock %}

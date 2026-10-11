@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import csrf, confirm_delete with context %}
+{% block title %}{{ lesson.title }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.curriculum') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Parcours</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-1 mb-4">
+  <div>
+    <div class="small text-muted">{{ CATALOG[lesson.unit.package_code].name }} · {{ lesson.unit.title }}</div>
+    <h1 class="h3 mb-0">{{ lesson.title }}</h1>
+  </div>
+  <a href="{{ url_for('admin.crud_form', slug='lecons', obj_id=lesson.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Renommer / déplacer</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    {% for card in lesson.cards %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between gap-2 mb-2">
+          <span class="badge {{ 'text-bg-info' if card.kind == 'theory' else 'text-bg-success' }}">{{ loop.index }}. {{ dict(kinds)[card.kind] }}</span>
+          <span class="text-nowrap">
+            {% for direction, icon in [("haut", "bi-arrow-up"), ("bas", "bi-arrow-down")] %}
+            <form method="post" action="{{ url_for('admin.card_move', card_id=card.id, direction=direction) }}" class="d-inline">{{ csrf() }}
+              <button class="btn btn-sm btn-outline-secondary" aria-label="Déplacer vers le {{ direction }}"><i class="bi {{ icon }}"></i></button></form>
+            {% endfor %}
+            {{ confirm_delete(url_for('admin.card_delete', card_id=card.id), "") }}
+          </span>
+        </div>
+        {% if card.title %}<div class="fw-bold">{{ card.title }}</div>{% endif %}
+        <div class="small">{{ card.body|nl2br }}</div>
+        {% if card.kind == 'choice' %}
+          <ul class="list-unstyled small mt-2 mb-1">
+            {% for c in card.choices %}<li class="{{ 'text-success fw-bold' if loop.index0 == card.answer|int }}"><i class="bi {{ 'bi-check-circle-fill' if loop.index0 == card.answer|int else 'bi-circle' }}"></i> {{ c }}</li>{% endfor %}
+          </ul>
+        {% elif card.kind == 'number' %}
+          <div class="small mt-2 text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Réponse : {{ card.answer }} {{ card.unit_label or '' }}</div>
+        {% endif %}
+        {% if card.explanation %}<div class="small text-muted mt-1"><i class="bi bi-lightbulb"></i> {{ card.explanation }}</div>{% endif %}
+      </div>
+    </div>
+    {% else %}
+      <p class="text-muted">Cette leçon n'a pas encore de fiche : elle n'apparaît pas dans le parcours des élèves.</p>
+    {% endfor %}
+  </div>
+
+  <div class="col-lg-5">
+    <form method="post" class="card" id="ajout">
+      <div class="card-body">
+        {{ csrf() }}
+        <h2 class="h6">Ajouter une fiche</h2>
+        <label class="form-label small" for="kind">Type</label>
+        <select class="form-select mb-2" id="kind" name="kind" data-card-kind>
+          {% for value, label in kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+        </select>
+        <div data-kind="theory">
+          <input class="form-control mb-2" name="title" placeholder="Titre de la fiche (ex. « Le savais-tu ? »)">
+        </div>
+        <textarea class="form-control mb-2" name="body" rows="4" placeholder="Texte de la fiche, ou énoncé de la question" required></textarea>
+        <div data-kind="choice" hidden>
+          {% for i in range(1, 5) %}
+          <div class="input-group mb-2">
+            <div class="input-group-text"><input class="form-check-input mt-0" type="radio" name="correct" value="{{ i }}" {{ 'checked' if i == 1 }} aria-label="Bonne réponse"></div>
+            <input name="choice_{{ i }}" class="form-control" placeholder="Réponse {{ i }}{{ ' (optionnelle)' if i > 2 }}">
+          </div>
+          {% endfor %}
+          <div class="form-text mb-2">Cochez la bonne réponse. Pour un vrai/faux, saisissez « Vrai » et « Faux ».</div>
+        </div>
+        <div data-kind="number" hidden>
+          <div class="row g-2 mb-2">
+            <div class="col-8"><input class="form-control" name="answer" placeholder="Réponse (ex. 12,50)"></div>
+            <div class="col-4"><input class="form-control" name="unit_label" placeholder="Unité (€)" value="€"></div>
+          </div>
+        </div>
+        <div data-kind="choice number" hidden>
+          <textarea class="form-control mb-2" name="explanation" rows="2" placeholder="Explication affichée après la réponse"></textarea>
+        </div>
+        <button class="btn btn-brand w-100">Ajouter</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Compte créé{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card text-center">
+      <div class="card-body p-4 p-md-5">
+        <span class="welcome-icon"><i class="bi bi-envelope-check-fill"></i></span>
+        <h1 class="h3">{{ "Identifiants renvoyés" if resent else "Le compte de " ~ child.first_name ~ " est créé !" }}</h1>
+        <p class="text-muted">Un e-mail a été envoyé à <strong>{{ child.email }}</strong> avec son identifiant et un mot de passe provisoire.
+          À sa première connexion, {{ child.first_name }} choisira son mot de passe puis passera le test de niveau.</p>
+        {% if demo %}
+        <div class="alert alert-info text-start small">
+          <i class="bi bi-info-circle"></i> <strong>Mode démonstration :</strong> aucun serveur d'e-mail n'est configuré,
+          le message a été enregistré localement. <a href="{{ url_for('main.dev_emails') }}" target="_blank" rel="noopener">Voir l'e-mail envoyé</a>.
+        </div>
+        {% endif %}
+        <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
+          <a href="{{ url_for('parent.dashboard') }}" class="btn btn-brand">Retour au tableau de bord</a>
+          <a href="{{ url_for('parent.child_new') }}" class="btn btn-outline-secondary">Créer un autre compte</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

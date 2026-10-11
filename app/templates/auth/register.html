@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Inscription{% endblock %}
+{% macro field_row(field, type=None, autocomplete=None) %}
+<div class="mb-3">
+  {{ field.label(class="form-label") }}
+  {{ field(class="form-control" ~ (" is-invalid" if field.errors else ""), autocomplete=autocomplete) }}
+  {% for e in field.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+</div>
+{% endmacro %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-1">{{ "Créer mon compte parent" if role == "parent" else "Créer mon compte" }}</h1>
+        <p class="text-muted small">
+          {% if role == "parent" %}
+            Créez le compte de vos enfants (10 – 17 ans), suivez leur progression et recevez les annonces de la banque.
+          {% else %}
+            Inscription libre pour les 18 – 24 ans.
+            <strong>Tu as entre 10 et 17 ans ?</strong> C'est ton parent qui crée ton compte depuis
+            <a href="{{ url_for('auth.register', role='parent') }}">son espace parent</a> : tu recevras tes identifiants par e-mail.
+          {% endif %}
+        </p>
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            {{ form.bank_id.label(class="form-label") }}
+            {{ form.bank_id(class="form-select") }}
+          </div>
+          <div class="row">
+            <div class="col-sm-6">{{ field_row(form.first_name, autocomplete="given-name") }}</div>
+            <div class="col-sm-6">{{ field_row(form.last_name, autocomplete="family-name") }}</div>
+          </div>
+          {{ field_row(form.email, autocomplete="email") }}
+          {% if form.birth_date %}{{ field_row(form.birth_date, autocomplete="bday") }}{% endif %}
+          <div class="row">
+            <div class="col-sm-6">{{ field_row(form.password, autocomplete="new-password") }}</div>
+            <div class="col-sm-6">{{ field_row(form.confirm, autocomplete="new-password") }}</div>
+          </div>
+          <button class="btn btn-brand w-100">Créer mon compte</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

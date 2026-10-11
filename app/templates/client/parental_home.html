@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, announcement, empty with context %}
+{% block title %}{{ g.package.name }}{% endblock %}
+{% block content %}
+{{ pkg_header("Tes parents peuvent suivre tes progrès et recevoir des nouvelles de la plateforme.") }}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-people"></i> Mes parents</div>
+      <ul class="list-group list-group-flush">
+        {% for p in current_user.parents %}
+          <li class="list-group-item"><i class="bi bi-person-check text-success"></i> {{ p.full_name }}</li>
+        {% else %}
+          <li class="list-group-item text-muted small">Aucun parent rattaché à ton compte.</li>
+        {% endfor %}
+      </ul>
+      <div class="card-body small text-muted">Tes parents voient tes points, ta série, tes quiz et tes parties. Ils ne voient pas tes messages dans la communauté.</div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <h2 class="h5 mb-3">Annonces</h2>
+    {% for a in announcements %}{{ announcement(a) }}{% else %}{{ empty("Aucune annonce.", "bi-bell") }}{% endfor %}
+  </div>
+</div>
+{% endblock %}

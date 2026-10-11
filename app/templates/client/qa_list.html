@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import pkg_header, csrf, empty with context %}
+{% block title %}Questions / Réponses{% endblock %}
+{% block content %}
+{{ pkg_header("Pose tes questions : les conseillers de la banque et la communauté te répondent.", back=url_for('client.advanced_home')) }}
+<div class="row g-4">
+  <div class="col-lg-5 order-lg-2">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="h6">Poser une question</h2>
+        <form method="post">
+          {{ csrf() }}
+          <input class="form-control mb-2" name="title" maxlength="200" placeholder="Ta question en une phrase" required>
+          <textarea class="form-control mb-2" name="body" rows="4" placeholder="Donne un peu de contexte…" required></textarea>
+          <button class="btn btn-brand w-100">Publier</button>
+        </form>
+        <p class="small text-muted mt-2 mb-0"><i class="bi bi-shield-lock"></i> Ne partage jamais d'informations personnelles (codes, numéros de carte…).</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7 order-lg-1">
+    <div class="list-group">
+    {% for q in questions %}
+      <a href="{{ url_for('client.qa_detail', question_id=q.id) }}" class="list-group-item list-group-item-action">
+        <div class="d-flex justify-content-between gap-2">
+          <span class="fw-semibold">{{ q.title }}</span>
+          <span class="badge text-bg-light border align-self-start">{{ q.answers|length }} <i class="bi bi-chat"></i></span>
+        </div>
+        <small class="text-muted">{{ q.author.public_name }} · {{ q.created_at|date_fr }}</small>
+        {% if q.has_official_answer %}<span class="badge bg-success-subtle text-success ms-1">Réponse de la banque</span>{% endif %}
+      </a>
+    {% else %}{{ empty("Aucune question pour l'instant. Lance-toi !", "bi-chat-square-text") }}{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

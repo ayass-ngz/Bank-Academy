@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import csrf, empty with context %}
+{% block title %}Utilisateurs{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Utilisateurs</h1>
+  <a href="{{ url_for('admin.user_new') }}" class="btn btn-brand"><i class="bi bi-person-plus"></i> Nouveau compte</a>
+</div>
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a href="{{ url_for('admin.users') }}" class="btn btn-sm {{ 'btn-brand' if not selected else 'btn-outline-secondary' }}">Tous</a>
+  {% for code, label in roles.items() %}
+    <a href="{{ url_for('admin.users', role=code) }}" class="btn btn-sm {{ 'btn-brand' if selected == code else 'btn-outline-secondary' }}">{{ label }}</a>
+  {% endfor %}
+</div>
+{% if users %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Nom</th><th>E-mail</th><th>Rôle</th><th>Âge / tranche</th><th>Points</th><th>Statut</th><th></th></tr></thead>
+      <tbody>
+      {% for u in users %}
+      <tr class="{{ 'text-muted' if not u.active }}">
+        <td><a href="{{ url_for('admin.user_detail', user_id=u.id) }}">{{ u.full_name }}</a></td>
+        <td class="small">{{ u.email }}</td>
+        <td>{{ roles[u.role] }}</td>
+        <td>{% if u.role == 'client' %}{{ u.age }} ans <span class="badge text-bg-light border">{{ BANDS[u.band] }}</span>{% else %}—{% endif %}</td>
+        <td>{{ u.points if u.role == 'client' else '—' }}</td>
+        <td><span class="badge {{ 'text-bg-success' if u.active else 'text-bg-secondary' }}">{{ "Actif" if u.active else "Désactivé" }}</span></td>
+        <td class="text-end">
+          {% if u.id != current_user.id %}
+          <form method="post" action="{{ url_for('admin.user_toggle', user_id=u.id) }}">{{ csrf() }}
+            <button class="btn btn-sm btn-outline-secondary">{{ "Désactiver" if u.active else "Réactiver" }}</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}{{ empty("Aucun utilisateur.") }}{% endif %}
+{% endblock %}

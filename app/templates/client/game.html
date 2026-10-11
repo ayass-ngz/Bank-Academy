@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% set layout = "lesson" %}
+{% block title %}{{ title }}{% endblock %}
+{% block lesson %}
+<div class="lesson-shell" id="game"
+     data-check-url="{{ check_url }}" data-finish-url="{{ finish_url }}"
+     data-home-url="{{ home_url }}" data-replay-url="{{ replay_url }}"{% if time_limit %} data-time-limit="{{ time_limit }}"{% endif %}>
+  <header class="lesson-top">
+    <a href="{{ home_url }}" class="lesson-close" aria-label="Quitter la leçon"><i class="bi bi-x-lg"></i></a>
+    <div class="lesson-progress" role="progressbar" aria-label="Progression"><div id="game-bar"></div></div>
+    <span class="lesson-combo" id="game-combo" title="Bonnes réponses d'affilée"><i class="bi bi-lightning-charge-fill"></i> <span>0</span></span>
+  </header>
+
+  <main class="lesson-body">
+    <h1 class="lesson-title" id="game-title">{{ instruction }}</h1>
+    <div class="lesson-prompt" id="game-prompt-wrap">
+      <span class="lesson-prompt-label"><i class="bi bi-chat-square-text"></i> Question</span>
+      <div class="lesson-prompt-text" id="game-prompt" aria-live="polite">{% if not rounds %}Ce contenu n'est pas encore disponible. Reviens bientôt !{% endif %}</div>
+    </div>
+    <div id="game-answers" class="lesson-choices"></div>
+  </main>
+
+  <footer class="lesson-footer" id="game-footer">
+    <div class="lesson-footer-inner">
+      <div id="game-feedback" class="lesson-feedback" aria-live="polite"></div>
+      {% if rounds %}
+        <button id="game-action" class="btn btn-lesson" disabled>Vérifier</button>
+      {% else %}
+        <a href="{{ home_url }}" class="btn btn-lesson">Retour</a>
+      {% endif %}
+    </div>
+  </footer>
+</div>
+<script id="game-data" type="application/json">{{ rounds|tojson }}</script>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/games.js') }}"></script>{% endblock %}

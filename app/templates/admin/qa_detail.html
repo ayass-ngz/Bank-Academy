@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import csrf, confirm_delete with context %}
+{% block title %}{{ question.title }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.qa_list') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Questions</a>
+<div class="card mt-2 mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between gap-2">
+      <h1 class="h5">{{ question.title }}</h1>
+      {{ confirm_delete(url_for('admin.qa_delete', question_id=question.id)) }}
+    </div>
+    <p>{{ question.body|nl2br }}</p>
+    <small class="text-muted">{{ question.author.full_name }} ({{ question.author.email }}) · {{ question.created_at|datetime_fr }}</small>
+  </div>
+</div>
+{% for a in question.answers %}
+<div class="card mb-2 {{ 'border-success' if a.is_official }}">
+  <div class="card-body py-2 d-flex justify-content-between gap-2">
+    <div>
+      {% if a.is_official %}<span class="badge bg-success mb-1">Officielle</span>{% endif %}
+      <p class="mb-1">{{ a.body|nl2br }}</p>
+      <small class="text-muted">{{ a.author.full_name }} · {{ a.created_at|datetime_fr }}</small>
+    </div>
+    {{ confirm_delete(url_for('admin.answer_delete', answer_id=a.id), "") }}
+  </div>
+</div>
+{% endfor %}
+<form method="post" class="card mt-3 border-success">
+  <div class="card-body">
+    {{ csrf() }}
+    <label class="form-label fw-semibold" for="body">Réponse officielle de la banque</label>
+    <textarea id="body" name="body" class="form-control mb-2" rows="4" required></textarea>
+    <button class="btn btn-success">Publier la réponse</button>
+  </div>
+</form>
+{% endblock %}

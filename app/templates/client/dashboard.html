@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import mascot, empty with context %}
+{% block title %}Accueil{% endblock %}
+{% block content %}
+{% set r = rail %}
+
+{# --- Bienvenue + prochaine étape --- #}
+<section class="home-hero">
+  <div class="home-hero-plant">{{ mascot("", stage) }}</div>
+  <div class="home-hero-text">
+    <div class="home-hello">{{ greeting }} {{ current_user.first_name }} 👋</div>
+    <p class="home-sub">{{ bank.welcome_message or "Ta plante grandit à chaque étape terminée. Prêt(e) pour la suite ?" }}</p>
+    <div class="home-chips">
+      <span class="home-chip stat-streak" title="Jours de connexion d'affilée"><i class="bi bi-fire"></i> {{ current_user.effective_streak }} jour{{ 's' if current_user.effective_streak > 1 }} d'affilée</span>
+      <span class="home-chip stat-rank" title="Classement {{ BANDS[current_user.band] }}"><i class="bi bi-trophy-fill"></i> {{ r.rank }}<sup>{{ 'er' if r.rank == 1 else 'e' }}</sup> · {{ current_user.points }} pts</span>
+      <span class="home-chip"><i class="bi {{ level.icon }}"></i> Niveau {{ level.name }}</span>
+      <span class="home-chip"><i class="bi bi-signpost-2"></i> Parcours terminé à {{ percent }} %</span>
+    </div>
+  </div>
+  {% if next_step %}
+  {% set n = next_step.node %}
+  <div class="home-next" style="--unit: {{ next_step.section.color }}">
+    <div class="home-next-kicker">{{ "Prochain palier" if n.kind == "chest" else "Ta prochaine étape" }}</div>
+    <div class="home-next-title">{{ n.title }}</div>
+    <div class="home-next-meta">{{ next_step.section.package.name }} · {{ next_step.unit.title }}</div>
+    {% if n.kind == "chest" %}
+      <a href="{{ url_for('client.parcours', section=next_step.section.package.code) }}" class="btn btn-brand w-100">Valider le palier</a>
+    {% else %}
+      <a href="{{ n.url }}" class="btn btn-brand w-100">Continuer <i class="bi bi-arrow-right"></i></a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+
+{# --- Les rendez-vous du jour --- #}
+<div class="row g-3 mb-4">
+  {% if game %}
+  <div class="col-md-4">
+    <a href="{{ url_for('client.game_play', code=game_code) }}" class="home-tile" style="--tile: {{ game.color }}">
+      <span class="home-tile-icon"><i class="bi {{ game.icon }}"></i></span>
+      <span class="home-tile-kicker">Jeu du jour</span>
+      <span class="home-tile-title">{{ game.name }}</span>
+      <span class="home-tile-text">{{ game.description }}</span>
+      <span class="home-tile-cta">Jouer <i class="bi bi-arrow-right"></i></span>
+    </a>
+  </div>
+  {% endif %}
+  {% if r.quiz_of_day %}
+  <div class="col-md-4">
+    <a href="{{ url_for('client.quiz_take', quiz_id=r.quiz_of_day.id) }}" class="home-tile" style="--tile: #2f6fed">
+      <span class="home-tile-icon"><i class="bi bi-lightning-charge-fill"></i></span>
+      <span class="home-tile-kicker">Quiz du jour</span>
+      <span class="home-tile-title">{{ r.quiz_of_day.title }}</span>
+      <span class="home-tile-text">{{ "Déjà fait aujourd'hui, bravo !" if r.quiz_done else "Quelques questions pour tester tes connaissances." }}</span>
+      <span class="home-tile-cta">{{ "Revoir" if r.quiz_done else "Répondre" }} <i class="bi bi-arrow-right"></i></span>
+    </a>
+  </div>
+  {% endif %}
+  <div class="col-md-4">
+    <div class="home-tile is-static" style="--tile: #0c8599">
+      <span class="home-tile-kicker">Objectifs du jour · {{ r.quests|selectattr('done')|list|length }} / {{ r.quests|length }}</span>
+      {% for q in r.quests %}
+      <div class="objective {{ 'done' if q.done }}">
+        <i class="bi {{ 'bi-check-circle-fill' if q.done else 'bi-circle' }} objective-check"></i>
+        <div class="flex-grow-1 min-w-0">
+          <div class="objective-title">{{ q.title }}</div>
+          <div class="objective-bar"><span style="width: {{ (100 * q.value / q.goal)|round|int }}%"></span></div>
+        </div>
+        <span class="objective-count">{{ q.value }}/{{ q.goal }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{# --- Mes parcours --- #}
+{% if sections %}
+<div class="d-flex justify-content-between align-items-baseline">
+  <h2 class="section-title">Mes parcours</h2>
+  <a href="{{ url_for('client.parcours') }}" class="small fw-semibold">Voir tout le parcours</a>
+</div>
+<div class="row g-3 mb-4">
+  {% for s in sections %}
+  {% set s_stage = 0 if s.done_count == 0 else (1 if s.percent < 34 else (2 if s.percent < 67 else 3)) %}
+  <div class="col-md-4">
+    <a href="{{ url_for('client.parcours', section=s.package.code) }}" class="home-section" style="--unit: {{ s.color }}">
+      <span class="home-section-plant">{{ mascot("", s_stage) }}</span>
+      <span class="min-w-0 flex-grow-1">
+        <span class="home-section-name">{{ s.package.name }}</span>
+        <span class="home-section-meta">{{ s.units|selectattr('percent', 'equalto', 100)|list|length }} / {{ s.units|length }} unités terminées</span>
+        <span class="home-section-bar"><span style="width: {{ s.percent }}%"></span></span>
+      </span>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="row g-3">
+  {# --- Ma semaine --- #}
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="h6 mb-1">Ma semaine</h2>
+        <p class="small text-muted mb-3">Connecte-toi chaque jour pour faire grandir ta série 🔥</p>
+        <div class="week">
+          {% for d in week %}
+          <div class="week-day {{ 'is-active' if d.active }} {{ 'is-today' if d.today }} {{ 'is-future' if d.future }}">
+            <span class="week-dot">{% if d.active %}<i class="bi bi-fire"></i>{% endif %}</span>
+            <span class="week-label">{{ d.label }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between align-items-baseline mb-2">
+          <h2 class="h6 mb-0">Classement {{ BANDS[current_user.band] }}</h2>
+        </div>
+        {% for u in r.leaders[:3] %}
+        <div class="leader-row {{ 'me' if u.id == current_user.id }}">
+          <span class="leader-pos">{{ loop.index }}</span>
+          <span class="avatar">{{ u.first_name[:1] }}</span>
+          <span class="flex-grow-1 text-truncate">{{ u.public_name }}</span>
+          <span class="leader-points">{{ u.points }} pts</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    {# --- Le savais-tu ? --- #}
+    <div class="home-tip mb-3">
+      <span class="home-tip-icon"><i class="bi bi-lightbulb-fill"></i></span>
+      <div><div class="home-tip-kicker">Le savais-tu ?</div><div>{{ tip }}</div></div>
+    </div>
+    {# --- Infos de la banque --- #}
+    {% if infos %}
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-info-circle-fill text-danger"></i> Infos de {{ bank.name }}</span>
+        <a href="{{ url_for('client.information_home') }}" class="small fw-semibold">Tout voir</a>
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for a in infos %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between gap-2">
+            <span class="fw-semibold">{{ a.title }}</span>
+            {% if a.is_new %}<span class="badge text-bg-danger align-self-start">Nouveau</span>{% endif %}
+          </div>
+          <small class="text-muted">{{ a.kind_label }}{% if a.event_date %} · {{ a.event_date|datetime_fr }}{% endif %}</small>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

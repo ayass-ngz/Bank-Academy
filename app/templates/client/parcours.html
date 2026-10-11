@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% set with_rail = true %}
+{% from "partials/path.html" import render_units with context %}
+{% from "partials/macros.html" import empty with context %}
+{% block title %}Mon parcours{% endblock %}
+{% block content %}
+{% if section %}
+  {% if sections|length > 1 %}
+  <nav class="section-tabs" aria-label="Sections du parcours">
+    {% for s in sections %}
+    <a href="{{ url_for('client.parcours', section=s.package.code) }}" class="section-tab {{ 'active' if s is sameas section }}" style="--unit: {{ s.color }}">
+      <span class="section-tab-icon"><i class="bi {{ s.icon }}"></i></span>
+      <span class="min-w-0">
+        <span class="section-tab-name">{{ s.package.name }}</span>
+        <span class="section-tab-bar"><span style="width: {{ s.percent }}%"></span></span>
+      </span>
+    </a>
+    {% endfor %}
+  </nav>
+  {% endif %}
+  {{ render_units(section.units) }}
+{% else %}
+  {{ empty("Ta banque prépare ton parcours : reviens très vite !", "bi-signpost-2") }}
+{% endif %}
+{% endblock %}
