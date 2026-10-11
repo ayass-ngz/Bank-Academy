@@ -1,2 +1,0 @@
-# Synergie
-Hackathon SopraSteria
